@@ -1,0 +1,4 @@
+{"type":"Feature","geometry":{"type":"Point","coordinates":[139.68096,35.64034]},"properties":{"t":"tower","id":"tower-1"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[139.67022,35.59118]},"properties":{"t":"tower","id":"tower-2"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[139.65948,35.54202]},"properties":{"t":"tower","id":"tower-3"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[139.64874,35.49286]},"properties":{"t":"tower","id":"tower-4"}}

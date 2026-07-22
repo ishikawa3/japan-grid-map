@@ -1,0 +1,18 @@
+node_modules/
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# データパイプラインの中間・出力物（巨大なためコミットしない。data/sample/ のみ例外）
+data/raw/*
+data/interim/*
+data/dist/*
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/dist/.gitkeep
+
+web/dist/
+web/.vite/
+
+.env
+.env.local
