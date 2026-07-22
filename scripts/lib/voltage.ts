@@ -18,6 +18,19 @@ export const CLASSES: VoltageClass[] = [
 
 const MAX_PLAUSIBLE_VOLTAGE = 1_000_000;
 
+// 全国データを処理すると異常値が大量に出うるため、警告ログは最初のN件のみ表示する。
+const MAX_WARNINGS = 20;
+let warningCount = 0;
+function warnImplausible(raw: string) {
+  warningCount++;
+  if (warningCount <= MAX_WARNINGS) {
+    console.warn(`[voltage] implausible value ignored: "${raw}"`);
+    if (warningCount === MAX_WARNINGS) {
+      console.warn(`[voltage] further warnings suppressed (${MAX_WARNINGS}件を超えたため以降は非表示)`);
+    }
+  }
+}
+
 /**
  * OSM の `voltage` タグ値を最大電圧(V, 数値)に正規化する。
  * - "275000;66000" のようなセミコロン/カンマ区切りは最大値を採用
@@ -37,7 +50,7 @@ export function parseVoltage(raw: string | undefined | null): number {
   }
 
   if (max < 0 || max > MAX_PLAUSIBLE_VOLTAGE) {
-    console.warn(`[voltage] implausible value ignored: "${raw}"`);
+    warnImplausible(raw);
     return 0;
   }
 

@@ -189,7 +189,11 @@ export function MapView() {
       else map.once('load', apply);
     }
 
-    const unsubscribe = useMapStore.subscribe(apply);
+    // フィルタに関係する項目が変わったときだけ apply する（selected の変化では再適用しない）。
+    const unsubscribe = useMapStore.subscribe(
+      (s) => [s.visibleClasses, s.showSubstations, s.showPlants, s.showTowers] as const,
+      apply,
+    );
     return unsubscribe;
   }, []);
 

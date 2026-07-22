@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 import { CLASSES } from '../../../scripts/lib/voltage';
 
 export interface SelectedFeature {
@@ -53,7 +54,7 @@ function syncUrl(state: Pick<MapState, 'visibleClasses' | 'showSubstations' | 's
 
 const initial = readInitialState();
 
-export const useMapStore = create<MapState>((set, get) => ({
+export const useMapStore = create<MapState>()(subscribeWithSelector((set, get) => ({
   ...initial,
   selected: null,
   toggleClass: (c) => {
@@ -76,4 +77,4 @@ export const useMapStore = create<MapState>((set, get) => ({
     syncUrl({ ...get(), showTowers: v });
   },
   select: (f) => set({ selected: f }),
-}));
+})));

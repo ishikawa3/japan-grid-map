@@ -11,6 +11,8 @@ export function FeatureInfoPanel() {
 
   const { properties } = selected;
   const name = typeof properties.n === 'string' ? properties.n : '(名称不明)';
+  // tippecanoe は数値属性を文字列化することがあるため Number() で保険をかける。
+  const voltage = Number(properties.v);
 
   return (
     <div className="feature-info-panel" role="dialog" aria-label="施設情報">
@@ -23,10 +25,10 @@ export function FeatureInfoPanel() {
           <>
             <dt>電圧クラス</dt>
             <dd>{CLASS_LABEL.get(Number(properties.c)) ?? '不明'}</dd>
-            {typeof properties.v === 'number' && properties.v > 0 && (
+            {Number.isFinite(voltage) && voltage > 0 && (
               <>
                 <dt>電圧</dt>
-                <dd>{(properties.v / 1000).toLocaleString()} kV</dd>
+                <dd>{(voltage / 1000).toLocaleString()} kV</dd>
               </>
             )}
           </>
