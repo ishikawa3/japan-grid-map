@@ -1,0 +1,6 @@
+{"type":"Feature","geometry":{"type":"Point","coordinates":[139.6917,35.6895]},"properties":{"t":"substation","n":"新東京変電所（サンプル）","o":"東京電力パワーグリッド","id":"sub-1"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[139.638,35.4437]},"properties":{"t":"substation","n":"横浜変電所（サンプル）","o":"東京電力パワーグリッド","id":"sub-2"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[139.7029,35.5308]},"properties":{"t":"substation","n":"川崎変電所（サンプル）","o":"東京電力パワーグリッド","id":"sub-3"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[139.6489,35.8617]},"properties":{"t":"substation","n":"さいたま変電所（サンプル）","o":"東京電力パワーグリッド","id":"sub-4"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[140.1233,35.6073]},"properties":{"t":"substation","n":"千葉変電所（サンプル）","o":"東京電力パワーグリッド","id":"sub-5"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[140.3197,35.7647]},"properties":{"t":"substation","n":"成田変電所（サンプル）","o":"東京電力パワーグリッド","id":"sub-6"}}

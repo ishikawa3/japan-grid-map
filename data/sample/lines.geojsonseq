@@ -1,0 +1,7 @@
+{"type":"Feature","geometry":{"type":"LineString","coordinates":[[139.6917,35.6895],[139.638,35.4437]]},"properties":{"c":4,"v":500000,"n":"東京湾岸幹線（サンプル）","o":"東京電力パワーグリッド","id":"line-0"}}
+{"type":"Feature","geometry":{"type":"LineString","coordinates":[[139.6917,35.6895],[139.7029,35.5308]]},"properties":{"c":3,"v":275000,"n":"川崎連系線（サンプル）","o":"東京電力パワーグリッド","id":"line-1"}}
+{"type":"Feature","geometry":{"type":"LineString","coordinates":[[139.6917,35.6895],[139.6489,35.8617]]},"properties":{"c":2,"v":154000,"n":"さいたま線（サンプル）","o":"東京電力パワーグリッド","id":"line-2"}}
+{"type":"Feature","geometry":{"type":"LineString","coordinates":[[139.6917,35.6895],[140.1233,35.6073]]},"properties":{"c":2,"v":154000,"n":"千葉東線（サンプル）","o":"東京電力パワーグリッド","id":"line-3"}}
+{"type":"Feature","geometry":{"type":"LineString","coordinates":[[140.1233,35.6073],[140.3197,35.7647]]},"properties":{"c":1,"v":66000,"n":"成田支線（サンプル）","o":"東京電力パワーグリッド","id":"line-4"}}
+{"type":"Feature","geometry":{"type":"LineString","coordinates":[[139.638,35.4437],[139.7029,35.5308]]},"properties":{"c":1,"v":66000,"n":"京浜線（サンプル）","o":"東京電力パワーグリッド","id":"line-5"}}
+{"type":"Feature","geometry":{"type":"LineString","coordinates":[[139.7029,35.5308],[139.6489,35.8617]]},"properties":{"c":0,"v":0,"n":"未電圧タグ線（サンプル）","o":"東京電力パワーグリッド","id":"line-6"}}
