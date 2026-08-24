@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-for f in data/interim/lines.geojsonseq data/interim/nodes.geojsonseq data/interim/towers.geojsonseq; do
+for f in data/interim/lines.geojsonseq data/interim/nodes.geojsonseq data/interim/towers.geojsonseq data/interim/generators.geojsonseq; do
   if [[ ! -f "$f" ]]; then
     echo "$f が見つかりません。先に scripts/03-normalize.ts を実行してください" >&2
     exit 1
@@ -16,6 +16,9 @@ OUT=data/dist/grid.pmtiles
 LAYERS=(
   -L'{"file":"data/interim/lines.geojsonseq","layer":"lines","minzoom":4}'
   -L'{"file":"data/interim/nodes.geojsonseq","layer":"nodes","minzoom":6}'
+  # power=generator（個別の発電設備）は全国で1万件弱と nodes(substation/plant)より
+  # 少ないが局所的に密集しうるため、nodesよりやや高いズームから表示する
+  -L'{"file":"data/interim/generators.geojsonseq","layer":"generators","minzoom":7}'
 )
 
 # 発電所データ（MLIT）があれば追加レイヤとして含める（Phase 4）

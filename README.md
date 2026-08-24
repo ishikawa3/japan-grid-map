@@ -6,9 +6,9 @@ PMTiles + MapLibre GL JS を使い、サーバー不要（静的ホスティン�
 ## 現在の状態
 
 - リポジトリ構成・データパイプラインスクリプト・フロントエンドは一式実装済み
-- 本番データ（`japan-latest.osm.pbf` から抽出、lines 36,817 / nodes 50,984 / towers 257,833）を生成済みで、
-  GitHub Pages で公開中: https://ishikawa3.github.io/japan-grid-map/
-- タイル本体（`grid.pmtiles`、34MB）は `web/public/tiles/` にコミットして配信している（後述）
+- 本番データ（`japan-latest.osm.pbf` から抽出、lines 36,817 / nodes 50,984 / towers 257,833 /
+  generators 8,750）を生成済みで、GitHub Pages で公開中: https://ishikawa3.github.io/japan-grid-map/
+- タイル本体（`grid.pmtiles`、35MB）は `web/public/tiles/` にコミットして配信している（後述）
 
 再生成するには [クイックスタート](#クイックスタート) の `make data` を実行すること。
 

@@ -1,0 +1,3 @@
+{"type":"Feature","geometry":{"type":"Point","coordinates":[140.05,35.63]},"properties":{"t":"generator","src":"solar","n":"検見川浜メガソーラー（サンプル）","id":"gen-1"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[140.25,35.72]},"properties":{"t":"generator","src":"wind","n":"房総ウィンドファーム1号機（サンプル）","id":"gen-2"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[139.72,35.72]},"properties":{"t":"generator","src":"hydro","id":"gen-3"}}

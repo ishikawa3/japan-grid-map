@@ -3,7 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { CLASSES } from '../../../scripts/lib/voltage';
 
 export interface SelectedFeature {
-  layer: 'lines' | 'nodes' | 'towers';
+  layer: 'lines' | 'nodes' | 'towers' | 'generators';
   properties: Record<string, unknown>;
 }
 
@@ -12,11 +12,13 @@ interface MapState {
   showSubstations: boolean;
   showPlants: boolean;
   showTowers: boolean;
+  showGenerators: boolean;
   selected: SelectedFeature | null;
   toggleClass: (c: number) => void;
   setShowSubstations: (v: boolean) => void;
   setShowPlants: (v: boolean) => void;
   setShowTowers: (v: boolean) => void;
+  setShowGenerators: (v: boolean) => void;
   select: (f: SelectedFeature | null) => void;
 }
 
@@ -39,15 +41,19 @@ function readInitialState() {
     showSubstations: params.get('sub') !== '0',
     showPlants: params.get('plant') !== '0',
     showTowers: params.get('tower') === '1',
+    showGenerators: params.get('gen') !== '0',
   };
 }
 
-function syncUrl(state: Pick<MapState, 'visibleClasses' | 'showSubstations' | 'showPlants' | 'showTowers'>) {
+function syncUrl(
+  state: Pick<MapState, 'visibleClasses' | 'showSubstations' | 'showPlants' | 'showTowers' | 'showGenerators'>,
+) {
   const params = new URLSearchParams(window.location.search);
   params.set('v', Array.from(state.visibleClasses).sort().join(','));
   params.set('sub', state.showSubstations ? '1' : '0');
   params.set('plant', state.showPlants ? '1' : '0');
   params.set('tower', state.showTowers ? '1' : '0');
+  params.set('gen', state.showGenerators ? '1' : '0');
   const url = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
   window.history.replaceState(null, '', url);
 }
@@ -75,6 +81,10 @@ export const useMapStore = create<MapState>()(subscribeWithSelector((set, get) =
   setShowTowers: (v) => {
     set({ showTowers: v });
     syncUrl({ ...get(), showTowers: v });
+  },
+  setShowGenerators: (v) => {
+    set({ showGenerators: v });
+    syncUrl({ ...get(), showGenerators: v });
   },
   select: (f) => set({ selected: f }),
 })));

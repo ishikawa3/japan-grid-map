@@ -1,4 +1,4 @@
-// power.geojsonseq を lines / nodes / towers の3ファイルに振り分け、属性を正規化する。
+// power.geojsonseq を lines / nodes / towers / generators の4ファイルに振り分け、属性を正規化する。
 // ストリーム処理（1行ずつ）で行い、全件をメモリに載せない。
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
@@ -17,6 +17,7 @@ const IN_FILE = 'data/interim/power.geojsonseq';
 const OUT_LINES = 'data/interim/lines.geojsonseq';
 const OUT_NODES = 'data/interim/nodes.geojsonseq';
 const OUT_TOWERS = 'data/interim/towers.geojsonseq';
+const OUT_GENERATORS = 'data/interim/generators.geojsonseq';
 
 async function main() {
   await mkdir('data/interim', { recursive: true });
@@ -25,10 +26,12 @@ async function main() {
   const linesOut = createWriteStream(OUT_LINES);
   const nodesOut = createWriteStream(OUT_NODES);
   const towersOut = createWriteStream(OUT_TOWERS);
+  const generatorsOut = createWriteStream(OUT_GENERATORS);
 
   const classCounts = new Map<number, number>(CLASSES.map((c) => [c.c, 0]));
   let nodeCount = 0;
   let towerCount = 0;
+  let generatorCount = 0;
   let skipped = 0;
 
   for await (const line of rl) {
@@ -59,15 +62,18 @@ async function main() {
     } else if (power === 'tower' || power === 'portal') {
       writeTower(towersOut, feature, id, power);
       towerCount++;
+    } else if (power === 'generator') {
+      writeGenerator(generatorsOut, feature, id);
+      generatorCount++;
     } else {
       skipped++;
     }
   }
 
-  await Promise.all([closeStream(linesOut), closeStream(nodesOut), closeStream(towersOut)]);
+  await Promise.all([closeStream(linesOut), closeStream(nodesOut), closeStream(towersOut), closeStream(generatorsOut)]);
 
   console.log('--- normalize summary ---');
-  console.log(`nodes: ${nodeCount}, towers: ${towerCount}, skipped: ${skipped}`);
+  console.log(`nodes: ${nodeCount}, towers: ${towerCount}, generators: ${generatorCount}, skipped: ${skipped}`);
   console.log('lines by voltage class:');
   for (const cls of CLASSES) {
     console.log(`  class ${cls.c} (${cls.label}): ${classCounts.get(cls.c) ?? 0}`);
@@ -113,6 +119,29 @@ function writeNode(stream: WriteStream, feature: GeoJsonFeature, id: string, pow
 function writeTower(stream: WriteStream, feature: GeoJsonFeature, id: string, power: string) {
   const props: Record<string, unknown> = { t: power, id };
   stream.write(JSON.stringify({ ...feature, properties: props }) + '\n');
+}
+
+// power=generator: 個別の発電設備（太陽光パネル群・風車1基・小水力施設など）。
+// power=plant（発電所全体）とは別に付与される、より粒度の細かいタグ。
+function writeGenerator(stream: WriteStream, feature: GeoJsonFeature, id: string) {
+  const p = feature.properties;
+  const props: Record<string, unknown> = { t: 'generator', id };
+  if (p.name) props.n = p.name;
+  if (p.operator) props.o = p.operator;
+  if (p['generator:source']) props.src = p['generator:source'];
+  if (p['generator:method']) props.m = p['generator:method'];
+  const output = parseGeneratorOutput(p['generator:output:electricity']);
+  if (output) props.out = output;
+  stream.write(JSON.stringify({ ...feature, properties: props }) + '\n');
+}
+
+// "1.5 MW" / "500 kW" のような自由記述を人間可読な文字列のまま通す
+// （"yes" 等パース不能な値は捨てる。数値解析は行わず表示用途に留める）。
+function parseGeneratorOutput(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  const trimmed = raw.trim();
+  if (!/^[\d.]+\s*[kMG]?W$/i.test(trimmed)) return undefined;
+  return trimmed;
 }
 
 function toNumberOrUndefined(raw: string | undefined): number | undefined {

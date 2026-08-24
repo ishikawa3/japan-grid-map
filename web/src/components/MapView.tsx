@@ -122,18 +122,31 @@ export function MapView() {
               'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 1.5, 16, 3],
             },
           },
+          {
+            id: 'nodes-generators',
+            type: 'circle',
+            source: 'grid',
+            'source-layer': 'generators',
+            paint: {
+              'circle-color': '#5ec8d8',
+              'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 1.5, 14, 5],
+              'circle-stroke-color': '#1d5b66',
+              'circle-stroke-width': 1,
+            },
+          },
         ],
       },
     });
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
-    const clickableLayers = ['lines', 'nodes-substations', 'nodes-plants', 'towers'];
-    const layerToKind: Record<string, 'lines' | 'nodes' | 'towers'> = {
+    const clickableLayers = ['lines', 'nodes-substations', 'nodes-plants', 'towers', 'nodes-generators'];
+    const layerToKind: Record<string, 'lines' | 'nodes' | 'towers' | 'generators'> = {
       lines: 'lines',
       'nodes-substations': 'nodes',
       'nodes-plants': 'nodes',
       towers: 'towers',
+      'nodes-generators': 'generators',
     };
 
     const onClick = (e: maplibregl.MapMouseEvent) => {
@@ -169,7 +182,7 @@ export function MapView() {
     const apply = () => {
       const map = mapRef.current;
       if (!map || !map.isStyleLoaded()) return;
-      const { visibleClasses, showSubstations, showPlants, showTowers } = useMapStore.getState();
+      const { visibleClasses, showSubstations, showPlants, showTowers, showGenerators } = useMapStore.getState();
 
       const classFilter: FilterSpecification = [
         'in',
@@ -181,6 +194,7 @@ export function MapView() {
       map.setLayoutProperty('nodes-substations', 'visibility', showSubstations ? 'visible' : 'none');
       map.setLayoutProperty('nodes-plants', 'visibility', showPlants ? 'visible' : 'none');
       map.setLayoutProperty('towers', 'visibility', showTowers ? 'visible' : 'none');
+      map.setLayoutProperty('nodes-generators', 'visibility', showGenerators ? 'visible' : 'none');
     };
 
     const map = mapRef.current;
@@ -191,7 +205,7 @@ export function MapView() {
 
     // フィルタに関係する項目が変わったときだけ apply する（selected の変化では再適用しない）。
     const unsubscribe = useMapStore.subscribe(
-      (s) => [s.visibleClasses, s.showSubstations, s.showPlants, s.showTowers] as const,
+      (s) => [s.visibleClasses, s.showSubstations, s.showPlants, s.showTowers, s.showGenerators] as const,
       apply,
     );
     return unsubscribe;

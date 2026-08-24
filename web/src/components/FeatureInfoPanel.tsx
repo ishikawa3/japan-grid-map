@@ -1,4 +1,5 @@
 import { CLASSES } from '../../../scripts/lib/voltage';
+import { generatorSourceLabel } from '../lib/generatorSource';
 import { useMapStore } from '../store/useMapStore';
 
 const CLASS_LABEL = new Map(CLASSES.map((c) => [c.c, c.label]));
@@ -43,6 +44,18 @@ export function FeatureInfoPanel() {
           <>
             <dt>種別</dt>
             <dd>鉄塔</dd>
+          </>
+        )}
+        {selected.layer === 'generators' && (
+          <>
+            <dt>種別</dt>
+            <dd>発電設備（{generatorSourceLabel(typeof properties.src === 'string' ? properties.src : undefined)}）</dd>
+            {typeof properties.out === 'string' && (
+              <>
+                <dt>出力</dt>
+                <dd>{properties.out}</dd>
+              </>
+            )}
           </>
         )}
         {typeof properties.o === 'string' && (

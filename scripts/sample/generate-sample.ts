@@ -70,6 +70,28 @@ function towerFeature(lon: number, lat: number, id: string) {
   };
 }
 
+interface SampleGenerator {
+  id: string;
+  name?: string;
+  source: string;
+  lon: number;
+  lat: number;
+}
+
+const generators: SampleGenerator[] = [
+  { id: 'gen-1', name: '検見川浜メガソーラー（サンプル）', source: 'solar', lon: 140.05, lat: 35.63 },
+  { id: 'gen-2', name: '房総ウィンドファーム1号機（サンプル）', source: 'wind', lon: 140.25, lat: 35.72 },
+  { id: 'gen-3', source: 'hydro', lon: 139.72, lat: 35.72 },
+];
+
+function generatorFeature(g: SampleGenerator) {
+  return {
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [g.lon, g.lat] },
+    properties: { t: 'generator', src: g.source, ...(g.name ? { n: g.name } : {}), id: g.id },
+  };
+}
+
 async function main() {
   await mkdir('data/sample', { recursive: true });
 
@@ -87,11 +109,16 @@ async function main() {
     );
   }
 
+  const generatorLines = generators.map((g) => JSON.stringify(generatorFeature(g)));
+
   await writeFile('data/sample/nodes.geojsonseq', nodeLines.join('\n') + '\n');
   await writeFile('data/sample/lines.geojsonseq', lineLines.join('\n') + '\n');
   await writeFile('data/sample/towers.geojsonseq', towerLines.join('\n') + '\n');
+  await writeFile('data/sample/generators.geojsonseq', generatorLines.join('\n') + '\n');
 
-  console.log(`生成完了: nodes=${nodeLines.length}, lines=${lineLines.length}, towers=${towerLines.length}`);
+  console.log(
+    `生成完了: nodes=${nodeLines.length}, lines=${lineLines.length}, towers=${towerLines.length}, generators=${generatorLines.length}`,
+  );
 }
 
 main().catch((err) => {

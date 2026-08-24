@@ -49,15 +49,22 @@ make test     # 電圧パーサ等のユニットテスト
 - tippecanoe のオプションを変えたら必ず `pmtiles show` でサイズを記録し、`docs/tile-sizes.md` に追記する
 - OSMタグの解釈を変えたら normalize のテストを先に書く
 - `power=tower`（鉄塔）は全国で数十万件あるため、ズーム13以上でのみ表示する別レイヤ（towers）に分離する
+- `power=generator`（個別発電設備。太陽光パネル群・風車1基・小水力施設など、`power=plant`より粒度が細かい）
+  は `generators` レイヤとしてズーム7以上で表示する。全国約8,750件
 - 低ズームでの間引きは tippecanoe の `--drop-densest-as-needed` に任せきりにせず、電圧クラスによるフィルタ（フロント側 `setFilter`）で意味のある間引きをする
 
 ## 現在の状態（このリポジトリを引き継ぐ場合）
 
 本番データ生成・デプロイは完了済み（2026-08-24）。`make data` で japan-latest.osm.pbf から
-lines 36,817 / nodes 50,984 / towers 257,833 を抽出し、`grid.pmtiles`（34MB）を生成、
-`web/public/tiles/grid.pmtiles` にコミットして GitHub Pages で公開している。
+lines 36,817 / nodes 50,984 / towers 257,833 / generators 8,750 を抽出し、`grid.pmtiles`（35MB）を
+生成、`web/public/tiles/grid.pmtiles` にコミットして GitHub Pages で公開している。
 再生成する場合は `make data` を実行するだけでよい（`scripts/04-tile.sh` が
 `web/public/tiles/grid.pmtiles` への自動コピーまで行う。git commit は別途必要）。
+
+MLIT国土数値情報P03（発電施設）の統合は見送り済み: 最新版が2013年度で止まっており利用規約も
+非商用限定のため。`scripts/06-mlit-plants.sh` は未使用のまま残っているが、発電種別ごとに9つの
+シェープファイルが日本語サブディレクトリ（Shift-JIS）に分かれている点は未対応（現状のフラット
+`*.shp` globでは動かない）。将来使うなら要修正。
 
 過去のバグ: `scripts/03-normalize.ts` は osmium export の出力（RFC 8142 GeoJSON Text
 Sequences、各行先頭にRS制御文字 0x1E）を素の `line.trim()` で読んでいたため、実データ投入時に
