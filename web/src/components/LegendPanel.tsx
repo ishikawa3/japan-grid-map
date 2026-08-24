@@ -1,7 +1,12 @@
+import { useState } from 'react';
 import { CLASSES } from '../../../scripts/lib/voltage';
 import { useMapStore } from '../store/useMapStore';
 
+// スマホ幅では凡例が地図の大半を覆ってしまうため、デフォルトは折りたたんでおく。
+const COLLAPSE_BY_DEFAULT = typeof window !== 'undefined' && window.matchMedia('(max-width: 680px)').matches;
+
 export function LegendPanel() {
+  const [collapsed, setCollapsed] = useState(COLLAPSE_BY_DEFAULT);
   const visibleClasses = useMapStore((s) => s.visibleClasses);
   const showSubstations = useMapStore((s) => s.showSubstations);
   const showPlants = useMapStore((s) => s.showPlants);
@@ -14,60 +19,75 @@ export function LegendPanel() {
   const setShowGenerators = useMapStore((s) => s.setShowGenerators);
 
   return (
-    <aside className="legend-panel" aria-label="凡例">
-      <h1 className="legend-title">全国送電網マップ</h1>
+    <aside className={`legend-panel${collapsed ? ' legend-panel-collapsed' : ''}`} aria-label="凡例">
+      <div className="legend-header">
+        <h1 className="legend-title">全国送電網マップ</h1>
+        <button
+          type="button"
+          className="legend-toggle"
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? '凡例を開く' : '凡例を閉じる'}
+          onClick={() => setCollapsed((v) => !v)}
+        >
+          {collapsed ? '▾' : '▴'}
+        </button>
+      </div>
 
-      <section>
-        <h2 className="legend-heading">電圧クラス</h2>
-        <ul className="legend-list">
-          {CLASSES.map((cls) => (
-            <li key={cls.c}>
-              <button
-                type="button"
-                className="legend-item"
-                aria-pressed={visibleClasses.has(cls.c)}
-                onClick={() => toggleClass(cls.c)}
-              >
-                <span
-                  className="legend-swatch"
-                  style={{ background: cls.color, opacity: visibleClasses.has(cls.c) ? 1 : 0.25 }}
-                />
-                <span className={visibleClasses.has(cls.c) ? '' : 'legend-label-dim'}>{cls.label}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {!collapsed && (
+        <>
+          <section>
+            <h2 className="legend-heading">電圧クラス</h2>
+            <ul className="legend-list">
+              {CLASSES.map((cls) => (
+                <li key={cls.c}>
+                  <button
+                    type="button"
+                    className="legend-item"
+                    aria-pressed={visibleClasses.has(cls.c)}
+                    onClick={() => toggleClass(cls.c)}
+                  >
+                    <span
+                      className="legend-swatch"
+                      style={{ background: cls.color, opacity: visibleClasses.has(cls.c) ? 1 : 0.25 }}
+                    />
+                    <span className={visibleClasses.has(cls.c) ? '' : 'legend-label-dim'}>{cls.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-      <section>
-        <h2 className="legend-heading">施設</h2>
-        <ul className="legend-list">
-          <li>
-            <button type="button" className="legend-item" aria-pressed={showSubstations} onClick={() => setShowSubstations(!showSubstations)}>
-              <span className="legend-swatch" style={{ background: '#e8eef5', opacity: showSubstations ? 1 : 0.25 }} />
-              <span className={showSubstations ? '' : 'legend-label-dim'}>変電所</span>
-            </button>
-          </li>
-          <li>
-            <button type="button" className="legend-item" aria-pressed={showPlants} onClick={() => setShowPlants(!showPlants)}>
-              <span className="legend-swatch" style={{ background: '#ffd166', opacity: showPlants ? 1 : 0.25 }} />
-              <span className={showPlants ? '' : 'legend-label-dim'}>発電所</span>
-            </button>
-          </li>
-          <li>
-            <button type="button" className="legend-item" aria-pressed={showTowers} onClick={() => setShowTowers(!showTowers)}>
-              <span className="legend-swatch" style={{ background: '#8899aa', opacity: showTowers ? 1 : 0.25 }} />
-              <span className={showTowers ? '' : 'legend-label-dim'}>鉄塔（ズーム13以上）</span>
-            </button>
-          </li>
-          <li>
-            <button type="button" className="legend-item" aria-pressed={showGenerators} onClick={() => setShowGenerators(!showGenerators)}>
-              <span className="legend-swatch" style={{ background: '#5ec8d8', opacity: showGenerators ? 1 : 0.25 }} />
-              <span className={showGenerators ? '' : 'legend-label-dim'}>発電設備（個別、ズーム7以上）</span>
-            </button>
-          </li>
-        </ul>
-      </section>
+          <section>
+            <h2 className="legend-heading">施設</h2>
+            <ul className="legend-list">
+              <li>
+                <button type="button" className="legend-item" aria-pressed={showSubstations} onClick={() => setShowSubstations(!showSubstations)}>
+                  <span className="legend-swatch" style={{ background: '#e8eef5', opacity: showSubstations ? 1 : 0.25 }} />
+                  <span className={showSubstations ? '' : 'legend-label-dim'}>変電所</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" className="legend-item" aria-pressed={showPlants} onClick={() => setShowPlants(!showPlants)}>
+                  <span className="legend-swatch" style={{ background: '#ffd166', opacity: showPlants ? 1 : 0.25 }} />
+                  <span className={showPlants ? '' : 'legend-label-dim'}>発電所</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" className="legend-item" aria-pressed={showTowers} onClick={() => setShowTowers(!showTowers)}>
+                  <span className="legend-swatch" style={{ background: '#8899aa', opacity: showTowers ? 1 : 0.25 }} />
+                  <span className={showTowers ? '' : 'legend-label-dim'}>鉄塔（ズーム13以上）</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" className="legend-item" aria-pressed={showGenerators} onClick={() => setShowGenerators(!showGenerators)}>
+                  <span className="legend-swatch" style={{ background: '#5ec8d8', opacity: showGenerators ? 1 : 0.25 }} />
+                  <span className={showGenerators ? '' : 'legend-label-dim'}>発電設備（個別、ズーム7以上）</span>
+                </button>
+              </li>
+            </ul>
+          </section>
+        </>
+      )}
     </aside>
   );
 }

@@ -40,10 +40,57 @@ body {
   backdrop-filter: blur(6px);
 }
 
+/* 折りたたみ時はタイトル行だけの小さなピルにして、地図を極力隠さない。 */
+.legend-panel-collapsed {
+  width: auto;
+  max-height: none;
+  padding: 8px 10px;
+}
+
+.legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.legend-panel-collapsed .legend-header {
+  gap: 8px;
+}
+
+.legend-toggle {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(232, 238, 245, 0.08);
+  border: none;
+  border-radius: 6px;
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.legend-toggle:hover {
+  background: rgba(232, 238, 245, 0.16);
+}
+
+.legend-toggle:focus-visible {
+  outline: 2px solid #4dd6c1;
+  outline-offset: 1px;
+}
+
 .legend-title {
   font-size: 15px;
   font-weight: 600;
-  margin: 0 0 10px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.legend-panel:not(.legend-panel-collapsed) .legend-header {
+  margin-bottom: 10px;
 }
 
 .legend-heading {
@@ -155,9 +202,30 @@ body {
     left: 8px;
     padding: 10px 12px;
   }
+  .legend-panel-collapsed {
+    padding: 6px 8px;
+  }
   .feature-info-panel {
     left: 8px;
     right: 8px;
     width: auto;
+  }
+}
+
+/* タッチ操作端末では最低44pxのタップ領域を確保する（Apple/Google のガイドライン目安）。 */
+@media (pointer: coarse) {
+  .legend-item {
+    min-height: 44px;
+    padding: 8px 8px;
+  }
+  .legend-toggle {
+    width: 44px;
+    height: 44px;
+  }
+  .feature-info-close {
+    width: 44px;
+    height: 44px;
+    top: 0;
+    right: 0;
   }
 }
