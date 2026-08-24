@@ -36,7 +36,10 @@ jobs:
 
       - run: pnpm --filter web build
         env:
-          # 本番タイルの配布URL（GitHub Releases 等）。未設定時はリポジトリ同梱のサンプルタイルが使われる。
+          # 外部タイルホストを使う場合のみ設定する（CORS対応が必須。GitHub Releasesは不可、後述）。
+          # vars.PMTILES_URL が未設定でもこのキー自体は空文字列として渡るが、
+          # resolvePmtilesUrl() が空文字列を「未設定」として扱いリポジトリ同梱の
+          # web/public/tiles/grid.pmtiles にフォールバックする。
           VITE_PMTILES_URL: ${{ vars.PMTILES_URL }}
 
       - uses: actions/configure-pages@v5
