@@ -32,7 +32,10 @@ async function main() {
   let skipped = 0;
 
   for await (const line of rl) {
-    const trimmed = line.trim();
+    // osmium export -f geojsonseq は RFC 8142 (GeoJSON Text Sequences) に従い、
+    // 各レコードの先頭に RS (U+001E) を付与する。JS の trim() は RS を空白と
+    // 見なさず除去しないため、先に明示的に取り除いてから trim/parse する。
+    const trimmed = line.replace(/^\x1e/, '').trim();
     if (!trimmed) continue;
 
     let feature: GeoJsonFeature;

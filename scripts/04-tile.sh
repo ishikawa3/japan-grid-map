@@ -42,6 +42,20 @@ if (( size_bytes > 150 * 1024 * 1024 )); then
   echo "警告: 150MBの目標サイズを超えています。towers の minzoom を上げるか --simplification を上げてください" >&2
 fi
 
+# GitHub Releases のアセットは Access-Control-Allow-Origin を返さないため、
+# pmtiles の Range Request が別オリジン(GitHub Pages)からの fetch() で CORS ブロックされる。
+# そのため web/public/tiles/ に直接コミットし、Pages と同一オリジンで配信する
+# (git の1ファイル100MB制限に収まる場合のみ)。
+GIT_LIMIT=$((95 * 1024 * 1024))
+WEB_TILE=web/public/tiles/grid.pmtiles
+if (( size_bytes < GIT_LIMIT )); then
+  cp "$OUT" "$WEB_TILE"
+  echo "コピー完了: $WEB_TILE ($size) — git commit してデプロイに含めてください"
+else
+  echo "警告: $size_bytes バイトは git の100MB制限に近いため $WEB_TILE への自動コピーをスキップしました。" >&2
+  echo "  CORS対応のホスティング（raw.githubusercontent.com 経由の別ブランチ配信や Cloudflare R2 等）を検討してください（GitHub Releases はCORS非対応のため不可）" >&2
+fi
+
 echo "" >> docs/tile-sizes.md
 echo "## $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> docs/tile-sizes.md
 echo '```' >> docs/tile-sizes.md

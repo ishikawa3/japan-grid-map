@@ -21,20 +21,30 @@ make tile     # タイル再生成のみ
 make sample   # 軽量サンプルデータ生成 + サンプルpmtiles作成（本番pbf不要、数秒で完了）
 make dev      # web/ の開発サーバー
 make build    # web/ の本番ビルド
-make upload   # data/dist/grid.pmtiles を GitHub Releases にアップロード
+make upload   # data/dist/grid.pmtiles を GitHub Releases にアップロード（※現在の配信経路では未使用。バックアップ用途のみ）
 make test     # 電圧パーサ等のユニットテスト
 ```
 
 ## 配信方式
 
 - フロントエンド: GitHub Pages（`web/` を `.github/workflows/deploy.yml` でビルド・デプロイ）
-- タイル (`grid.pmtiles`): GitHub Releases のアセットとして配布（1ファイル2GBまで、Range Request対応、無料）。
-  リポジトリへの直接コミットは禁止（GitHubの1ファイル100MB制限に抵触するため）。
-- フロント側のタイルURLは `web/.env` の `VITE_PMTILES_URL` で切り替える（開発時はサンプル、本番はRelease URL）。
+- タイル (`grid.pmtiles`): `web/public/tiles/grid.pmtiles` として **リポジトリに直接コミット**し、
+  Pages と同一オリジンで配信する（`scripts/04-tile.sh` が data/dist/ から自動コピーする）。
+  本番タイルは現状34MB程度でgitの1ファイル100MB制限に十分収まっている。
+  - **GitHub Releases のアセットは使わないこと**: Access-Control-Allow-Origin を返さないため、
+    pmtiles の Range Request が別オリジン(GitHub Pages)からの `fetch()` で CORS ブロックされ、
+    地図にタイルが一切表示されない（過去に本番投入して発覚した既知の罠）。
+  - 将来タイルが100MBに近づき同一リポジトリへのコミットが困難になった場合は、
+    CORS対応のホスト（`raw.githubusercontent.com` 経由での別ブランチ配信、Cloudflare R2 等）に
+    切り替えること。`scripts/05-upload.sh`（Releasesアップロード）は現在デフォルトの配信経路では
+    使われていない。
+  - フロント側のタイルURLは `web/.env` の `VITE_PMTILES_URL` で上書き可能（未設定時は同梱の
+    `web/public/tiles/grid.pmtiles` を使う）。
 
 ## 原則
 
-- data/ 配下（data/sample/ を除く）はコミットしない
+- data/ 配下（data/sample/ を除く）はコミットしない。ただし `web/public/tiles/grid.pmtiles`
+  （配信用に data/dist/ からコピーしたもの）は例外としてコミットする
 - 電圧パースのロジックは `scripts/lib/voltage.ts` の一箇所のみ。フロントもここから import する
 - tippecanoe のオプションを変えたら必ず `pmtiles show` でサイズを記録し、`docs/tile-sizes.md` に追記する
 - OSMタグの解釈を変えたら normalize のテストを先に書く
@@ -43,7 +53,12 @@ make test     # 電圧パーサ等のユニットテスト
 
 ## 現在の状態（このリポジトリを引き継ぐ場合）
 
-本番の `japan-latest.osm.pbf` ダウンロードと osmium/tippecanoe の実行はまだ行っていない。
-`make sample` で作った少数の架空/簡易サンプルデータ（東京近郊）でフロントエンドの動作確認のみ済んでいる。
-本番データを生成するには `make data && make upload` を実行し、`web/.env` の `VITE_PMTILES_URL` を
-Releases の実URLに切り替えること。
+本番データ生成・デプロイは完了済み（2026-08-24）。`make data` で japan-latest.osm.pbf から
+lines 36,817 / nodes 50,984 / towers 257,833 を抽出し、`grid.pmtiles`（34MB）を生成、
+`web/public/tiles/grid.pmtiles` にコミットして GitHub Pages で公開している。
+再生成する場合は `make data` を実行するだけでよい（`scripts/04-tile.sh` が
+`web/public/tiles/grid.pmtiles` への自動コピーまで行う。git commit は別途必要）。
+
+過去のバグ: `scripts/03-normalize.ts` は osmium export の出力（RFC 8142 GeoJSON Text
+Sequences、各行先頭にRS制御文字 0x1E）を素の `line.trim()` で読んでいたため、実データ投入時に
+全件が `skipped` になっていた（サンプルデータにはRS文字がなく発覚しなかった）。修正済み。
