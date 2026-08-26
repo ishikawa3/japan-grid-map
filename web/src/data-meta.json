@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-08-24",
+  "osmSource": "Geofabrik japan-latest.osm.pbf",
+  "counts": {
+    "lines": 36817,
+    "nodes": 50984,
+    "towers": 257833,
+    "generators": 8750
+  }
+}

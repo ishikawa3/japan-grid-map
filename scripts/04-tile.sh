@@ -54,6 +54,25 @@ WEB_TILE=web/public/tiles/grid.pmtiles
 if (( size_bytes < GIT_LIMIT )); then
   cp "$OUT" "$WEB_TILE"
   echo "コピー完了: $WEB_TILE ($size) — git commit してデプロイに含めてください"
+
+  # UIに出すデータ鮮度と件数（アプリが web/src/data-meta.json として import する）
+  count_of() { [[ -f "$1" ]] && wc -l < "$1" | tr -d ' ' || echo 0; }
+  cat > web/src/data-meta.json <<JSON
+{
+  "generatedAt": "$(date -u +%Y-%m-%d)",
+  "osmSource": "Geofabrik japan-latest.osm.pbf",
+  "counts": {
+    "lines": $(count_of data/interim/lines.geojsonseq),
+    "nodes": $(count_of data/interim/nodes.geojsonseq),
+    "towers": $(count_of data/interim/towers.geojsonseq),
+    "generators": $(count_of data/interim/generators.geojsonseq)
+  }
+}
+JSON
+  echo "更新完了: web/src/data-meta.json"
+
+  # 施設名の検索インデックスもタイルから作り直す
+  pnpm exec tsx scripts/07-search-index.ts
 else
   echo "警告: $size_bytes バイトは git の100MB制限に近いため $WEB_TILE への自動コピーをスキップしました。" >&2
   echo "  CORS対応のホスティング（raw.githubusercontent.com 経由の別ブランチ配信や Cloudflare R2 等）を検討してください（GitHub Releases はCORS非対応のため不可）" >&2

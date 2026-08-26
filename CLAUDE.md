@@ -6,9 +6,12 @@
 
 ```
 scripts/         データパイプライン（OSM抽出 → 正規化 → タイル化 → 配布）
-scripts/lib/voltage.ts  電圧パース・クラス分けの唯一のソース（web からも import）
+scripts/lib/voltage.ts   電圧パース・クラス分けの唯一のソース（web からも import）
+scripts/07-search-index.ts  タイルから施設名検索インデックスを生成
 scripts/sample/   軽量なサンプルデータ生成・タイル化（本番pbfなしで動作確認用）
+scripts/assets/   favicon/OGP画像の生成スクリプト（要 playwright、生成物はコミット）
 web/              Vite + React + TypeScript + MapLibre GL JS フロントエンド
+web/src/data-meta.json  UIに出すデータ鮮度と件数（04-tile.sh が自動更新）
 data/             パイプラインの中間・出力物。data/sample/ 以外は .gitignore 対象
 docs/tile-sizes.md  tippecanoe オプション変更時のタイルサイズ記録
 ```
@@ -18,6 +21,7 @@ docs/tile-sizes.md  tippecanoe オプション変更時のタイルサイズ記�
 ```
 make data     # 本番パイプライン全実行（初回2-3時間、japan-latest.osm.pbf 約2GBを取得）
 make tile     # タイル再生成のみ
+make search-index  # タイルから施設名の検索インデックスを再生成（make tile 内でも自動実行）
 make sample   # 軽量サンプルデータ生成 + サンプルpmtiles作成（本番pbf不要、数秒で完了）
 make dev      # web/ の開発サーバー
 make build    # web/ の本番ビルド
@@ -52,6 +56,12 @@ make test     # 電圧パーサ等のユニットテスト
 - `power=generator`（個別発電設備。太陽光パネル群・風車1基・小水力施設など、`power=plant`より粒度が細かい）
   は `generators` レイヤとしてズーム7以上で表示する。全国約8,750件
 - 低ズームでの間引きは tippecanoe の `--drop-densest-as-needed` に任せきりにせず、電圧クラスによるフィルタ（フロント側 `setFilter`）で意味のある間引きをする
+- 検索インデックスは**必ず最大ズーム(z14)から**抽出する。低ズームのタイルは間引き済みで、
+  実測で z10:4,692 → z12:6,674 → z14:10,001 件と取りこぼす（`--verify` で確認できる）
+- `index.html` 内のアセット参照はリポジトリ名を含めず `/favicon.svg` のように書く。
+  Vite が `base` を前置するため、ハードコードすると `base` 変更時に壊れる
+- Service Worker はアプリシェルのみキャッシュし、`tiles/` と Range Request は対象外にする
+  （35MBのバイナリでストレージを圧迫し、206レスポンスは Cache API に put できない）
 
 ## 現在の状態（このリポジトリを引き継ぐ場合）
 
@@ -66,6 +76,28 @@ MLIT国土数値情報P03（発電施設）の統合は見送り済み: 最新�
 シェープファイルが日本語サブディレクトリ（Shift-JIS）に分かれている点は未対応（現状のフラット
 `*.shp` globでは動かない）。将来使うなら要修正。
 
-過去のバグ: `scripts/03-normalize.ts` は osmium export の出力（RFC 8142 GeoJSON Text
-Sequences、各行先頭にRS制御文字 0x1E）を素の `line.trim()` で読んでいたため、実データ投入時に
-全件が `skipped` になっていた（サンプルデータにはRS文字がなく発覚しなかった）。修正済み。
+### 過去のバグ
+
+1. `scripts/03-normalize.ts` は osmium export の出力（RFC 8142 GeoJSON Text Sequences、各行先頭に
+   RS制御文字 0x1E）を素の `line.trim()` で読んでいたため、実データ投入時に全件が `skipped` に
+   なっていた（サンプルデータにはRS文字がなく発覚しなかった）。修正済み。
+
+2. `writeNode` が Polygon/MultiPolygon しか代表点化しておらず、osmium がエリアとして扱わなかった
+   `power=substation` の way が **LineString のまま nodes レイヤに入っていた**。circle レイヤは
+   頂点ごとに円を描くため、変電所が「円の塊」に見え、検索インデックスからも漏れていた。
+   normalize 側は修正済み（Point 以外はすべて代表点化する）だが、**現在配信中のタイルは修正前の
+   もの**なので LineString が残っている。フロントは `geometry-type` で振り分け、点は circle、
+   外形線は line レイヤ（`nodes-*-outline`）で描いて両対応にしてある。
+   次回 `make data` で再生成すれば outline レイヤは自然に空になる。
+
+## SEO / PWA / WebMCP
+
+- `web/index.html` に description・OGP・Twitter Card・canonical・JSON-LD・`<noscript>` を用意。
+  `maximum-scale` は指定しない（ピンチズーム禁止はアクセシビリティを損なうため）
+- `web/public/` に robots.txt / sitemap.xml / manifest.webmanifest / favicon / アイコン / og-image.png。
+  OGP画像は実際の地図から `scripts/assets/generate-og-image.cjs` で生成する
+- WebMCP (`web/src/lib/webmcp.ts`): 地図の移動・電圧フィルタ・レイヤ切替・施設検索を
+  AIエージェント向けツールとして公開。仕様が `navigator.modelContext` → `document.modelContext` へ
+  移行中のため両対応にし、未対応ブラウザでは何もしない（機能検出のみ）。
+  2026-08時点で W3C の Draft Community Group Report であり標準化トラック未到達。Chrome は
+  Origin Trial（本番利用にはトークン登録が必要）、Firefox/Safari 未実装

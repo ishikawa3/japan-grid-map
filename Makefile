@@ -1,4 +1,4 @@
-.PHONY: data download filter normalize tile upload sample dev build test clean
+.PHONY: data download filter normalize tile search-index upload sample dev build test clean
 
 # --- 本番データパイプライン（初回2-3時間、GB単位のダウンロード） ---
 
@@ -15,6 +15,10 @@ normalize:
 
 tile:
 	bash scripts/04-tile.sh
+
+# タイルから施設名の検索インデックスを作り直す（make tile 内でも自動実行される）
+search-index:
+	pnpm exec tsx scripts/07-search-index.ts
 
 upload:
 	bash scripts/05-upload.sh

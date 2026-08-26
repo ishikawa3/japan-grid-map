@@ -1,0 +1,19 @@
+{
+  "name": "全国送電網マップ",
+  "short_name": "送電網マップ",
+  "description": "日本全国の送電線・変電所・発電所・鉄塔を電圧クラス別に色分けして表示する地図。",
+  "start_url": "/japan-grid-map/",
+  "scope": "/japan-grid-map/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "lang": "ja",
+  "categories": ["utilities", "education", "navigation"],
+  "icons": [
+    { "src": "/japan-grid-map/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/japan-grid-map/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/japan-grid-map/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/japan-grid-map/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

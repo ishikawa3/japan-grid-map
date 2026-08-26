@@ -104,12 +104,21 @@ function writeNode(stream: WriteStream, feature: GeoJsonFeature, id: string, pow
   if (p.operator) props.o = p.operator;
   if (p['plant:source']) props.src = p['plant:source'];
 
+  // nodes レイヤは代表点だけを持つ前提（フロントは circle レイヤで描画する）。
+  // osmium export は power=substation の閉じた way をエリアとして扱わず LineString で
+  // 出力することがあり、これを素通しすると circle レイヤが頂点ごとに円を描いてしまい、
+  // 検索インデックスからも漏れる。Point 以外はすべて代表点に落とす。
   let geometry = feature.geometry;
-  if (geometry && (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon')) {
-    const centroid = polygonCentroid(geometry);
-    if (centroid) {
-      props.area = Math.round(centroid.areaM2);
-      geometry = { type: 'Point', coordinates: centroid.point };
+  if (geometry && geometry.type !== 'Point') {
+    if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
+      const centroid = polygonCentroid(geometry);
+      if (centroid) {
+        props.area = Math.round(centroid.areaM2);
+        geometry = { type: 'Point', coordinates: centroid.point };
+      }
+    } else {
+      const center = boundsCenter(geometry);
+      if (center) geometry = { type: 'Point', coordinates: center };
     }
   }
 
@@ -148,6 +157,31 @@ function toNumberOrUndefined(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
   const n = Number.parseInt(raw, 10);
   return Number.isFinite(n) ? n : undefined;
+}
+
+/** 任意ジオメトリの座標範囲の中心を代表点として返す（Polygon以外のフォールバック） */
+function boundsCenter(geometry: { type: string; coordinates: unknown }): [number, number] | null {
+  let minLon = Infinity;
+  let maxLon = -Infinity;
+  let minLat = Infinity;
+  let maxLat = -Infinity;
+
+  const walk = (node: unknown) => {
+    if (!Array.isArray(node)) return;
+    if (typeof node[0] === 'number' && typeof node[1] === 'number') {
+      const [lon, lat] = node as [number, number];
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      return;
+    }
+    for (const child of node) walk(child);
+  };
+  walk(geometry.coordinates);
+
+  if (!Number.isFinite(minLon) || !Number.isFinite(minLat)) return null;
+  return [(minLon + maxLon) / 2, (minLat + maxLat) / 2];
 }
 
 /** 面積(m²)と重心を求める（等長方位図法近似、緯度で経度方向をスケール補正） */
