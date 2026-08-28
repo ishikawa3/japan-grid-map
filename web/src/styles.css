@@ -526,3 +526,162 @@ body {
 .noscript-notice a {
   color: #4dd6c1;
 }
+
+/* ---------- PWA（更新通知・オフライン表示） ---------- */
+
+.pwa-status {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.pwa-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(440px, calc(100vw - 24px));
+  padding: 9px 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #e8eef5;
+  background: rgba(11, 18, 32, 0.95);
+  border: 1px solid rgba(232, 238, 245, 0.18);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+}
+
+.pwa-chip-offline {
+  border-color: rgba(255, 154, 138, 0.4);
+}
+
+.pwa-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff9a8a;
+  flex: none;
+}
+
+.pwa-action {
+  flex: none;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0b1220;
+  background: #4dd6c1;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.pwa-action:hover {
+  background: #6fe3d1;
+}
+
+.pwa-action:focus-visible {
+  outline: 2px solid #e8eef5;
+  outline-offset: 2px;
+}
+
+.about-install {
+  margin-top: 10px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0b1220;
+  background: #4dd6c1;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.about-install:hover {
+  background: #6fe3d1;
+}
+
+.about-install:focus-visible {
+  outline: 2px solid #e8eef5;
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .pwa-action,
+  .about-install {
+    min-height: 44px;
+  }
+}
+
+/* 地図を隠さないよう、狭い画面では下部いっぱいに寄せる */
+@media (max-width: 480px) {
+  .pwa-status {
+    left: 8px;
+    right: 8px;
+    transform: none;
+  }
+  .pwa-chip {
+    max-width: none;
+    border-radius: 12px;
+  }
+}
+
+/* ---------- セーフエリア（ノッチ／ホームインジケータ） ---------- */
+/*
+ * viewport-fit=cover と apple-mobile-web-app-status-bar-style=black-translucent により、
+ * スタンドアロン起動時にコンテンツがステータスバーやホームインジケータの下へ回り込む。
+ * 端末側の余白を足して、パネルが隠れないようにする。
+ */
+
+.legend-panel {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: calc(12px + env(safe-area-inset-left, 0px));
+}
+
+.search-panel {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+}
+
+.about-trigger {
+  left: calc(12px + env(safe-area-inset-left, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+
+.feature-info-panel {
+  left: calc(12px + env(safe-area-inset-left, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+}
+
+.pwa-status {
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 680px) {
+  .search-panel {
+    top: calc(58px + env(safe-area-inset-top, 0px));
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+  }
+}
+
+@media (max-width: 480px) {
+  .legend-panel {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: calc(8px + env(safe-area-inset-left, 0px));
+  }
+  .feature-info-panel {
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+  .pwa-status {
+    left: calc(8px + env(safe-area-inset-left, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+  }
+}

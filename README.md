@@ -18,7 +18,8 @@ PMTiles + MapLibre GL JS を使い、サーバー不要（静的ホスティン�
 - 変電所・発電所・個別発電設備・鉄塔のレイヤ別表示切り替え
 - **施設名での検索**（約5,300件の変電所・発電所・発電設備を名前で引ける）
 - 表示状態のURL同期（ズーム・位置・フィルタを含めた共有が可能）
-- PWA対応（ホーム画面に追加でき、アプリシェルはオフラインでも起動する）
+- PWA対応（ホーム画面に追加でき、アプリシェルはオフラインでも起動する。
+  新バージョン検知時は更新を promptし、勝手にリロードしない）
 - [WebMCP](https://github.com/webmachinelearning/webmcp) 対応（AIエージェントから地図の移動・
   絞り込み・施設検索を実行できる。対応ブラウザのみ）
 
@@ -27,7 +28,7 @@ PMTiles + MapLibre GL JS を使い、サーバー不要（静的ホスティン�
 - `scripts/` — OSM抽出 → 正規化 → タイル化 → `web/public/tiles/` へのコピー
 - `scripts/lib/voltage.ts` — 電圧パース・電圧クラス分けの唯一のソース（`web/` からも参照）
 - `scripts/07-search-index.ts` — タイルから施設名の検索インデックスを生成
-- `scripts/assets/` — favicon・OGP画像の生成スクリプト
+- `scripts/assets/` — favicon・OGP画像・インストールUI用スクリーンショットの生成スクリプト
 - `web/` — Vite + React + TypeScript + MapLibre GL JS フロントエンド
 - `data/` — パイプラインの中間・出力物（`data/sample/` 以外は Git 管理外）
 

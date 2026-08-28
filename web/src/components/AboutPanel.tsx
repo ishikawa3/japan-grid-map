@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import meta from '../data-meta.json';
+import { isStandalone, useInstallPrompt } from '../lib/pwa';
 
 const REPO_URL = 'https://github.com/ishikawa3/japan-grid-map';
 
@@ -7,6 +8,7 @@ export function AboutPanel() {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const { canInstall, install } = useInstallPrompt();
 
   // 開いている間だけ Escape で閉じられるようにし、閉じたらトリガーへフォーカスを戻す
   useEffect(() => {
@@ -72,6 +74,19 @@ export function AboutPanel() {
                 <span className="about-total">（計 {total.toLocaleString()} 件）</span>
               </dd>
             </dl>
+
+            {canInstall && !isStandalone() && (
+              <>
+                <h3 className="about-heading">アプリとして使う</h3>
+                <p className="about-note">
+                  ホーム画面やアプリ一覧に追加すると、ブラウザのUIなしで全画面表示できます。
+                  一度開いた画面はオフラインでも起動します（地図データの取得には通信が必要です）。
+                </p>
+                <button type="button" className="about-install" onClick={install}>
+                  インストール
+                </button>
+              </>
+            )}
 
             <h3 className="about-heading">出典</h3>
             <ul className="about-list">

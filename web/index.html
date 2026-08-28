@@ -17,6 +17,12 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
+    <!-- iOS Safari は manifest の display/name を見ないため、ホーム画面追加用に個別指定する -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="送電網マップ" />
+
     <!-- 地理院タイル・PMTiles は同一オリジンだが、接続確立を前倒しして初回描画を早める -->
     <link rel="preconnect" href="https://cyberjapandata.gsi.go.jp" />
     <link rel="dns-prefetch" href="https://cyberjapandata.gsi.go.jp" />

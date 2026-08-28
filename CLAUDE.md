@@ -62,6 +62,11 @@ make test     # 電圧パーサ等のユニットテスト
   Vite が `base` を前置するため、ハードコードすると `base` 変更時に壊れる
 - Service Worker はアプリシェルのみキャッシュし、`tiles/` と Range Request は対象外にする
   （35MBのバイナリでストレージを圧迫し、206レスポンスは Cache API に put できない）
+- Service Worker は**自動で skipWaiting しない**。新バージョンは waiting のまま待機させ、
+  ユーザーが更新に同意したら `SKIP_WAITING` メッセージで有効化する
+  （地図の操作中に勝手にリロードされるのを避けるため）。SW を変更したら `VERSION` を上げる
+- `web/public/manifest.webmanifest` 内のパスは `public/` にそのままコピーされるため
+  base を自動付与できない。リポジトリ名を含む絶対パスで書く（index.html とは扱いが異なる）
 
 ## 現在の状態（このリポジトリを引き継ぐ場合）
 
@@ -96,6 +101,10 @@ MLIT国土数値情報P03（発電施設）の統合は見送り済み: 最新�
   `maximum-scale` は指定しない（ピンチズーム禁止はアクセシビリティを損なうため）
 - `web/public/` に robots.txt / sitemap.xml / manifest.webmanifest / favicon / アイコン / og-image.png。
   OGP画像は実際の地図から `scripts/assets/generate-og-image.cjs` で生成する
+- PWA (`web/src/lib/pwa.ts`): SW登録・更新検知・`beforeinstallprompt` 捕捉・オンライン状態を集約。
+  インストールボタンは「このサイトについて」内（常時バナーを出さない）、更新通知とオフライン表示は
+  `PwaStatus`。`apple-mobile-web-app-status-bar-style: black-translucent` と `viewport-fit=cover` で
+  コンテンツがステータスバー下に回り込むため、パネルの位置には `env(safe-area-inset-*)` を足す
 - WebMCP (`web/src/lib/webmcp.ts`): 地図の移動・電圧フィルタ・レイヤ切替・施設検索を
   AIエージェント向けツールとして公開。仕様が `navigator.modelContext` → `document.modelContext` へ
   移行中のため両対応にし、未対応ブラウザでは何もしない（機能検出のみ）。
