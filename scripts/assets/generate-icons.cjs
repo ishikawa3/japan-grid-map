@@ -19,7 +19,10 @@ const maskableSvg = svg
   .replace('<rect width="64" height="64" rx="12"', '<rect x="-8" y="-8" width="80" height="80" rx="0"');
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  // 兄弟スクリプト（generate-og-image / generate-screenshots）と同じく、パスは
+  // CHROMIUM_PATH を優先し、未指定なら Playwright 既定の解決に任せる
+  // （Linux固定パスを直書きすると macOS 等で再生成できない）。
+  const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
   const jobs = [
     { name: 'icon-192.png', size: 192, src: svg },
     { name: 'icon-512.png', size: 512, src: svg },

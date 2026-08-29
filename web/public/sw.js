@@ -48,6 +48,14 @@ self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
+// レスポンスをキャッシュに保存する。書き込みは必ず event.waitUntil() に紐づけること。
+// respondWith が解決した時点で未完了の waitUntil がなければ SW は終了しうるため、
+// 紐づけずに投げっぱなしにすると書き込みが取りこぼされることがある。
+function cachePut(event, key, response) {
+  const copy = response.clone(); // body を読まれる前に同期的に複製する
+  event.waitUntil(caches.open(SHELL_CACHE).then((c) => c.put(key, copy)));
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
@@ -62,8 +70,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(SHELL_CACHE).then((c) => c.put(BASE, copy));
+          cachePut(event, BASE, res);
           return res;
         })
         .catch(() => caches.match(BASE).then((hit) => hit ?? Response.error())),
@@ -79,10 +86,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((res) => {
-          if (res.ok && res.status === 200 && res.type === 'basic') {
-            const copy = res.clone();
-            caches.open(SHELL_CACHE).then((c) => c.put(request, copy));
-          }
+          if (res.ok && res.status === 200 && res.type === 'basic') cachePut(event, request, res);
           return res;
         })
         .catch(() => caches.match(request).then((hit) => hit ?? Response.error())),
@@ -95,10 +99,7 @@ self.addEventListener('fetch', (event) => {
     caches.match(request).then((hit) => {
       if (hit) return hit;
       return fetch(request).then((res) => {
-        if (res.ok && res.status === 200 && res.type === 'basic') {
-          const copy = res.clone();
-          caches.open(SHELL_CACHE).then((c) => c.put(request, copy));
-        }
+        if (res.ok && res.status === 200 && res.type === 'basic') cachePut(event, request, res);
         return res;
       });
     }),
