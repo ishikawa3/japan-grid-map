@@ -1,0 +1,10 @@
+# 全国送電網マップ
+User-agent: *
+Allow: /
+
+# 35MBのベクタタイル本体と検索インデックスはクロール対象にしない
+# （HTMLではなくバイナリ/データで、検索結果に出す意味がないため）
+Disallow: /japan-grid-map/tiles/
+Disallow: /japan-grid-map/search-index.json
+
+Sitemap: https://ishikawa3.github.io/japan-grid-map/sitemap.xml

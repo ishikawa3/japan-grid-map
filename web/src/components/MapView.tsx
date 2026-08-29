@@ -1,6 +1,7 @@
 import maplibregl, { type FilterSpecification, type Map as MLMap } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { useEffect, useRef } from 'react';
+import { setMap } from '../lib/mapController';
 import { resolvePmtilesUrl } from '../lib/pmtilesUrl';
 import { lineColorExpr, lineGlowWidthExpr, lineWidthExpr } from '../lib/style';
 import { useMapStore } from '../store/useMapStore';
@@ -43,13 +44,16 @@ export function MapView() {
             type: 'raster',
             tiles: ['https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'],
             tileSize: 256,
-            attribution: '地理院タイル',
+            attribution:
+              '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noreferrer noopener">地理院タイル</a>',
             maxzoom: 18,
           },
           grid: {
             type: 'vector',
             url: `pmtiles://${tilesUrl}`,
-            attribution: '© OpenStreetMap contributors',
+            // ODbL は「データがODbLの下にある」ことの明示を求めるため、ライセンスへのリンクも併記する
+            attribution:
+              '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer noopener">OpenStreetMap</a> contributors, <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noreferrer noopener">ODbL</a>',
           },
         },
         layers: [
@@ -86,12 +90,35 @@ export function MapView() {
             layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: { 'line-color': lineColorExpr, 'line-width': lineWidthExpr },
           },
+          // nodes レイヤには Point 以外（施設の外形線）も含まれる。circle レイヤは
+          // 頂点ごとに円を描いてしまい塊のように見えるので、Point だけを円で描き、
+          // 外形線は line レイヤで敷地の形として描く。
+          // （03-normalize.ts の修正後に再生成したタイルでは全て Point になり、
+          //   outline レイヤは自然に空になる）
+          {
+            id: 'nodes-substations-outline',
+            type: 'line',
+            source: 'grid',
+            'source-layer': 'nodes',
+            filter: ['all', ['==', ['get', 't'], 'substation'], ['!=', ['geometry-type'], 'Point']],
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': '#e8eef5', 'line-width': 1.6, 'line-opacity': 0.85 },
+          },
+          {
+            id: 'nodes-plants-outline',
+            type: 'line',
+            source: 'grid',
+            'source-layer': 'nodes',
+            filter: ['all', ['==', ['get', 't'], 'plant'], ['!=', ['geometry-type'], 'Point']],
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': '#ffd166', 'line-width': 1.6, 'line-opacity': 0.85 },
+          },
           {
             id: 'nodes-substations',
             type: 'circle',
             source: 'grid',
             'source-layer': 'nodes',
-            filter: ['==', ['get', 't'], 'substation'],
+            filter: ['all', ['==', ['get', 't'], 'substation'], ['==', ['geometry-type'], 'Point']],
             paint: {
               'circle-color': '#e8eef5',
               'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 2, 14, 6],
@@ -104,7 +131,7 @@ export function MapView() {
             type: 'circle',
             source: 'grid',
             'source-layer': 'nodes',
-            filter: ['==', ['get', 't'], 'plant'],
+            filter: ['all', ['==', ['get', 't'], 'plant'], ['==', ['geometry-type'], 'Point']],
             paint: {
               'circle-color': '#ffd166',
               'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 2.5, 14, 7],
@@ -140,18 +167,22 @@ export function MapView() {
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
 
-    const clickableLayers = ['lines', 'nodes-substations', 'nodes-plants', 'towers', 'nodes-generators'];
     const layerToKind: Record<string, 'lines' | 'nodes' | 'towers' | 'generators'> = {
       lines: 'lines',
       'nodes-substations': 'nodes',
+      'nodes-substations-outline': 'nodes',
       'nodes-plants': 'nodes',
+      'nodes-plants-outline': 'nodes',
       towers: 'towers',
       'nodes-generators': 'generators',
     };
+    // 施設の点・外形線のどちらをクリックしても情報を出す
+    const clickableLayers = Object.keys(layerToKind);
 
     const onClick = (e: maplibregl.MapMouseEvent) => {
       const features = map.queryRenderedFeatures(e.point, { layers: clickableLayers });
-      const f = features[0];
+      // queryRenderedFeatures は描画順で返すため、送電線より施設を優先して拾う
+      const f = features.find((feat) => feat.layer.id !== 'lines') ?? features[0];
       if (!f) {
         useMapStore.getState().select(null);
         return;
@@ -169,11 +200,13 @@ export function MapView() {
     }
 
     mapRef.current = map;
+    setMap(map);
 
     return () => {
       map.off('click', onClick);
       map.remove();
       mapRef.current = null;
+      setMap(null);
     };
   }, []);
 
@@ -191,8 +224,13 @@ export function MapView() {
       ];
       map.setFilter('lines', classFilter);
       map.setFilter('lines-glow', classFilter);
-      map.setLayoutProperty('nodes-substations', 'visibility', showSubstations ? 'visible' : 'none');
-      map.setLayoutProperty('nodes-plants', 'visibility', showPlants ? 'visible' : 'none');
+      // 施設は点と外形線の2レイヤに分かれているので両方まとめて切り替える
+      const subVis = showSubstations ? 'visible' : 'none';
+      const plantVis = showPlants ? 'visible' : 'none';
+      map.setLayoutProperty('nodes-substations', 'visibility', subVis);
+      map.setLayoutProperty('nodes-substations-outline', 'visibility', subVis);
+      map.setLayoutProperty('nodes-plants', 'visibility', plantVis);
+      map.setLayoutProperty('nodes-plants-outline', 'visibility', plantVis);
       map.setLayoutProperty('towers', 'visibility', showTowers ? 'visible' : 'none');
       map.setLayoutProperty('nodes-generators', 'visibility', showGenerators ? 'visible' : 'none');
     };

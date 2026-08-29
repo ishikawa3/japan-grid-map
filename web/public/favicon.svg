@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="送電鉄塔">
+  <rect width="64" height="64" rx="12" fill="#0b1220"/>
+  <!-- 送電線（電圧クラスの色を上から500kV/275kV/154kVの順に使う） -->
+  <path d="M2 20 Q32 30 62 20" fill="none" stroke="#f4f1e6" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M2 30 Q32 40 62 30" fill="none" stroke="#ff8a3d" stroke-width="2.2" stroke-linecap="round"/>
+  <!-- 鉄塔本体 -->
+  <g stroke="#4dd6c1" stroke-width="2.6" stroke-linecap="round" fill="none">
+    <path d="M22 56 L32 12 L42 56"/>
+    <path d="M26 36 L38 36"/>
+    <path d="M24 46 L40 46"/>
+  </g>
+  <!-- 腕金 -->
+  <g stroke="#e8eef5" stroke-width="2.4" stroke-linecap="round">
+    <path d="M16 20 L48 20"/>
+    <path d="M19 30 L45 30"/>
+  </g>
+</svg>

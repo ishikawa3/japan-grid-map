@@ -2,11 +2,90 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <title>全国送電網マップ</title>
+    <!-- maximum-scale は指定しない（ピンチズームを禁止するとUIを拡大できずアクセシビリティを損なうため） -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1220" />
+
+    <title>全国送電網マップ | 日本の送電線・変電所・発電所を電圧別に見る地図</title>
+    <meta
+      name="description"
+      content="日本全国の送電線・変電所・発電所・鉄塔を、500kV以上から60kV未満まで電圧クラス別に色分けして表示する地図。OpenStreetMapのデータをもとに、送電線約3.7万本・変電所や発電所約5万件を収録。施設名での検索にも対応。"
+    />
+    <link rel="canonical" href="https://ishikawa3.github.io/japan-grid-map/" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- iOS Safari は manifest の display/name を見ないため、ホーム画面追加用に個別指定する -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="送電網マップ" />
+
+    <!-- 地理院タイル・PMTiles は同一オリジンだが、接続確立を前倒しして初回描画を早める -->
+    <link rel="preconnect" href="https://cyberjapandata.gsi.go.jp" />
+    <link rel="dns-prefetch" href="https://cyberjapandata.gsi.go.jp" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="全国送電網マップ" />
+    <meta property="og:title" content="全国送電網マップ" />
+    <meta
+      property="og:description"
+      content="日本全国の送電線・変電所・発電所・鉄塔を電圧クラス別に色分けして表示する地図。OpenStreetMapのデータをもとに全国約35万件を収録。"
+    />
+    <meta property="og:url" content="https://ishikawa3.github.io/japan-grid-map/" />
+    <meta property="og:image" content="https://ishikawa3.github.io/japan-grid-map/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="日本全国の送電網を電圧別に色分けした地図" />
+    <meta property="og:locale" content="ja_JP" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="全国送電網マップ" />
+    <meta
+      name="twitter:description"
+      content="日本全国の送電線・変電所・発電所・鉄塔を電圧クラス別に色分けして表示する地図。"
+    />
+    <meta name="twitter:image" content="https://ishikawa3.github.io/japan-grid-map/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "全国送電網マップ",
+        "url": "https://ishikawa3.github.io/japan-grid-map/",
+        "applicationCategory": "BrowserApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "WebGL対応ブラウザ",
+        "inLanguage": "ja",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" },
+        "description": "日本全国の送電線・変電所・発電所・鉄塔を電圧クラス別に色分けして表示する地図アプリケーション。",
+        "license": "https://opendatacommons.org/licenses/odbl/",
+        "creditText": "© OpenStreetMap contributors (ODbL)"
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div class="noscript-notice">
+        <h1>全国送電網マップ</h1>
+        <p>
+          日本全国の送電線・変電所・発電所・鉄塔を、電圧クラス別に色分けして表示する地図です。
+          送電線約36,800本、変電所・発電所約51,000件、鉄塔約258,000基を収録しています。
+        </p>
+        <p>
+          地図の描画に JavaScript と WebGL を使用しているため、閲覧には JavaScript を有効にしてください。
+        </p>
+        <p>
+          データ出典: ©
+          <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors
+          (<a href="https://opendatacommons.org/licenses/odbl/">ODbL</a>) / 背景地図: 地理院タイル（国土地理院）
+        </p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

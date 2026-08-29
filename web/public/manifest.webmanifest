@@ -1,0 +1,52 @@
+{
+  "id": "/japan-grid-map/",
+  "name": "全国送電網マップ",
+  "short_name": "送電網マップ",
+  "description": "日本全国の送電線・変電所・発電所・鉄塔を電圧クラス別に色分けして表示する地図。",
+  "start_url": "/japan-grid-map/",
+  "scope": "/japan-grid-map/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "lang": "ja",
+  "dir": "ltr",
+  "categories": ["utilities", "education", "navigation"],
+  "icons": [
+    { "src": "/japan-grid-map/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/japan-grid-map/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/japan-grid-map/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/japan-grid-map/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "/japan-grid-map/screenshot-wide.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "全国の送電網を電圧クラス別に色分けして表示"
+    },
+    {
+      "src": "/japan-grid-map/screenshot-narrow.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "全国の送電網を電圧クラス別に色分けして表示"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "基幹送電線のみ表示",
+      "short_name": "基幹送電線",
+      "description": "500kV以上の基幹送電線だけを全国表示する",
+      "url": "/japan-grid-map/?v=4&sub=1&plant=1&tower=0&gen=0#5/37/138.5"
+    },
+    {
+      "name": "関東エリア",
+      "short_name": "関東",
+      "description": "関東地方の送電網を表示する",
+      "url": "/japan-grid-map/#9/35.7/139.7"
+    }
+  ]
+}
