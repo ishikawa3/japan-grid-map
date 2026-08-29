@@ -62,8 +62,9 @@ export function searchFacilities(entries: FacilityEntry[], rawQuery: string, lim
     else score = 2;
 
     scored.push({ entry, score: score * 1000 + name.length });
-    // 全件走査は5,000件程度なら十分速いが、上限に達したら早めに打ち切る
-    if (scored.length > limit * 40) break;
+    // 途中で打ち切らないこと。エントリは名前順に並んでいるため、候補数で走査を止めると
+    // 後ろにある完全一致を取りこぼす（例: "発電所" は4,939件マッチし、完全一致の
+    // 「発電所」は先頭801件より後ろにあるので消える）。5,000件程度の全件走査は十分速い。
   }
 
   return scored

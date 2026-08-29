@@ -62,10 +62,15 @@ export function registerServiceWorker() {
       .catch((err) => console.warn('[pwa] Service Worker の登録に失敗しました', err));
   });
 
-  // 新しい SW が制御を取ったら一度だけリロードして新バージョンを反映する
+  // 新しい SW が制御を取ったら一度だけリロードして新バージョンを反映する。
+  // ただし初回訪問（このページ読み込み時点で controller がない）は対象外。
+  // sw.js の activate が clients.claim() を呼ぶと、初回インストールでもこのページが
+  // 制御下に入って controllerchange が発火するため、ガードしないと初訪問者が
+  // 地図の初期化直後に無意味なリロードを踏む。
+  const hadController = navigator.serviceWorker.controller !== null;
   let reloading = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloading) return;
+    if (!hadController || reloading) return;
     reloading = true;
     window.location.reload();
   });

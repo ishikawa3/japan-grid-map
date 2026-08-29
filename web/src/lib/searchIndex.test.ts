@@ -40,4 +40,20 @@ describe('searchFacilities', () => {
   it('limit を超えて返さない', () => {
     expect(searchFacilities(entries, '所', 2)).toHaveLength(2);
   });
+
+  // 以前は候補が limit*40 件に達すると走査を打ち切っており、名前順で後ろにある
+  // 完全一致を取りこぼしていた（実データの "発電所" で完全一致が消えていた）。
+  it('マッチが大量にあっても、名前順で後ろにある完全一致を取りこぼさない', () => {
+    const many: FacilityEntry[] = [
+      // 「〜発電所」を大量に並べ、完全一致の「発電所」を最後尾に置く
+      ...Array.from({ length: 3000 }, (_, i) => ({
+        n: `あ${String(i).padStart(4, '0')}発電所`,
+        t: 'p' as const,
+        lon: 139,
+        lat: 35,
+      })),
+      { n: '発電所', t: 'p', lon: 139, lat: 35 },
+    ];
+    expect(searchFacilities(many, '発電所')[0].n).toBe('発電所');
+  });
 });

@@ -185,11 +185,17 @@ async function main() {
   const header = await pmtiles.getHeader();
   console.log(`入力: ${TILE_PATH} (z${header.minZoom}-${header.maxZoom}, ${(buf.length / 1024 / 1024).toFixed(1)}MB)`);
 
-  // --verify: 隣接ズームでも件数が増えないこと（= そのズームで間引かれていないこと）を確認する
+  // --verify: 隣接ズームでも件数が増えないこと（= そのズームで間引かれていないこと）を確認する。
+  // maxZoom を超えるズームは全タイルが空振りするだけ（z15 は約855万回の無駄な参照になり、
+  // 結果も「0 件」と出て誤解を招く）ので、タイルが実在する範囲に丸める。
   if (process.argv.includes('--verify')) {
-    for (const z of [ZOOM - 1, ZOOM, ZOOM + 1]) {
+    const zooms = [ZOOM - 1, ZOOM, ZOOM + 1].filter((z) => z >= header.minZoom && z <= header.maxZoom);
+    for (const z of zooms) {
       const a = await buildIndex(pmtiles, z);
       console.log(`  z${z}: ${a.size} 件`);
+    }
+    if (ZOOM + 1 > header.maxZoom) {
+      console.log(`  （z${ZOOM + 1} 以上はタイルが存在しないため省略。maxZoom=${header.maxZoom}）`);
     }
     return;
   }

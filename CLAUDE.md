@@ -62,6 +62,13 @@ make test     # 電圧パーサ等のユニットテスト
   Vite が `base` を前置するため、ハードコードすると `base` 変更時に壊れる
 - Service Worker はアプリシェルのみキャッシュし、`tiles/` と Range Request は対象外にする
   （35MBのバイナリでストレージを圧迫し、206レスポンスは Cache API に put できない）
+- SW の cache-first に載せてよいのは**ファイル名にハッシュが付くビルド生成物だけ**。
+  `public/` 配下のハッシュなしファイルで中身が変わりうるもの（`search-index.json` など）は
+  network-first にする。cache-first にすると `VERSION` を上げるまで永久に古いものが返り、
+  `make data` でデータを作り直しても再訪問ユーザーに反映されない
+- SW の `activate` で `clients.claim()` を呼ぶため、初回インストールでも `controllerchange` が
+  発火する。リロード処理は「ページ読み込み時点で controller があったか」でガードすること
+  （さもないと初訪問者が地図の初期化直後に無意味なリロードを踏む）
 - Service Worker は**自動で skipWaiting しない**。新バージョンは waiting のまま待機させ、
   ユーザーが更新に同意したら `SKIP_WAITING` メッセージで有効化する
   （地図の操作中に勝手にリロードされるのを避けるため）。SW を変更したら `VERSION` を上げる
