@@ -165,7 +165,14 @@ export function MapView() {
       },
     });
 
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    // コンパスは必ず出すこと。回転ジェスチャ（2本指回転・右ドラッグ・Shift+矢印）は
+    // MapLibre の既定で有効なため、コンパスを隠すと一度回してしまった利用者が
+    // 北に戻す手段を失う（ハッシュに bearing が残り、リロードしても直らない）。
+    // クリックで bearing を 0 に戻せるようにしておく。
+    map.addControl(
+      new maplibregl.NavigationControl({ showCompass: true, visualizePitch: false }),
+      'top-right',
+    );
 
     const layerToKind: Record<string, 'lines' | 'nodes' | 'towers' | 'generators'> = {
       lines: 'lines',
