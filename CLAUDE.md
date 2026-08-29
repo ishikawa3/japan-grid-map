@@ -58,6 +58,11 @@ make test     # 電圧パーサ等のユニットテスト
 - 低ズームでの間引きは tippecanoe の `--drop-densest-as-needed` に任せきりにせず、電圧クラスによるフィルタ（フロント側 `setFilter`）で意味のある間引きをする
 - 検索インデックスは**必ず最大ズーム(z14)から**抽出する。低ズームのタイルは間引き済みで、
   実測で z10:4,692 → z12:6,674 → z14:10,001 件と取りこぼす（`--verify` で確認できる）
+- 地図の **NavigationControl から `showCompass` を外さない**。回転ジェスチャ（2本指回転・
+  右ドラッグ・Shift+矢印）は MapLibre の既定で有効なので、コンパスを隠すと「回せるのに
+  戻せない」状態になる。しかも bearing は `hash:true` が URL（`#zoom/lat/lng/bearing`）に
+  保存するため、リロードしても直らない。回転を許すならリセット手段を必ず残し、許さないなら
+  `dragRotate.disable()` 等でジェスチャ側を無効化する（片方だけにしない）
 - `index.html` 内のアセット参照はリポジトリ名を含めず `/favicon.svg` のように書く。
   Vite が `base` を前置するため、ハードコードすると `base` 変更時に壊れる
 - Service Worker はアプリシェルのみキャッシュし、`tiles/` と Range Request は対象外にする
