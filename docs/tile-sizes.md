@@ -76,3 +76,33 @@ version 2
 strategies <object, use --metadata to view full JSON metadata>
 ```
 サイズ:  35M
+
+## 2026-08-29T14:36:15Z
+```
+pmtiles spec version: 3
+tile type: mvt
+bounds: (long: 123.011609, lat: 24.062059) (long: 145.804541, lat: 45.478038)
+min zoom: 4
+max zoom: 14
+center: (long: 137.010498, lat: 35.092945)
+center zoom: 14
+addressed tiles count: 61258
+tile entries count: 61258
+tile contents count: 61258
+clustered: true
+internal compression: gzip
+tile compression: gzip
+antimeridian_adjusted_bounds 123.011609,24.062059,145.804541,45.478038
+name Japan Power Grid
+type overlay
+attribution © OpenStreetMap contributors
+strategies <object, use --metadata to view full JSON metadata>
+vector_layers <object, use --metadata to view full JSON metadata>
+tilestats <object, use --metadata to view full JSON metadata>
+format pbf
+description Japan Power Grid
+version 2
+generator tippecanoe v2.79.0
+generator_options tippecanoe -o data/dist/grid.pmtiles --force '--name=Japan Power Grid' '--attribution=© OpenStreetMap contributors' -Z4 -z14 --drop-densest-as-needed --extend-zooms-if-still-dropping '--simplification=4' '-L{"file":"data/interim/lines.geojsonseq","layer":"lines","minzoom":4}' '-L{"file":"data/interim/nodes.geojsonseq","layer":"nodes","minzoom":6}' '-L{"file":"data/interim/generators.geojsonseq","layer":"generators","minzoom":7}' '-L{"file":"data/interim/towers.geojsonseq","layer":"towers","minzoom":13}'
+```
+サイズ:  31M
