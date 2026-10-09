@@ -1,4 +1,10 @@
-import maplibregl, { type FilterSpecification, type Map as MLMap } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import type { FilterSpecification, Map as MLMap } from 'maplibre-gl';
+// MapLibre GL v6 は ESM 専用配布になり、Vite ではワーカーの URL を自動検出できないため明示する。
+// `?worker&url` にすると、ワーカーが読み込む姉妹ファイル（maplibre-gl-shared.mjs）ごと
+// 1つの自己完結したチャンクにまとめてもらえる（`?url` 単体だと本番ビルドでワーカーが起動しない）。
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 import { Protocol } from 'pmtiles';
 import { useEffect, useRef } from 'react';
 import { setMap } from '../lib/mapController';

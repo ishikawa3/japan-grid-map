@@ -8,8 +8,8 @@ export default defineConfig({
   base: process.env.VITE_BASE_PATH ?? '/japan-grid-map/',
   plugins: [react()],
   build: {
-    // maplibre-gl 単体で 800KB 超あり分割しようがないため、既定の500KB警告は実態に合わせて上げる
-    chunkSizeWarningLimit: 900,
+    // maplibre-gl 単体で 1MB 近くあり（v6 で約1,050KB）分割しようがないため、既定の500KB警告は実態に合わせて上げる
+    chunkSizeWarningLimit: 1100,
     rollupOptions: {
       output: {
         // 地図ライブラリはアプリコードよりはるかに大きく更新頻度も低い。
