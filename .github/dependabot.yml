@@ -1,0 +1,28 @@
+# Dependabot: 依存パッケージの更新PRを毎週月曜に作る。
+# 既知の脆弱性の修正PR(security updates)は、リポジトリの Settings → Code security で
+# 「Dependabot alerts」「Dependabot security updates」を有効にすると、この週次とは別に随時作られる。
+# マイナー・パッチ更新は1つのPRにまとめて、PRの数を抑える。
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-patch:
+        update-types: ["minor", "patch"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 5
+    groups:
+      github-actions-minor-patch:
+        update-types: ["minor", "patch"]
