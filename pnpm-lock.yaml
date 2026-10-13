@@ -20,8 +20,8 @@ importers:
         specifier: ^5.1.2
         version: 5.1.2
       pmtiles:
-        specifier: ^3.2.1
-        version: 3.2.1
+        specifier: ^4.5.0
+        version: 4.5.0
       tsx:
         specifier: ^4.19.0
         version: 4.23.1
@@ -38,8 +38,8 @@ importers:
         specifier: ^6.11.2
         version: 6.11.2
       pmtiles:
-        specifier: ^3.2.1
-        version: 3.2.1
+        specifier: ^4.5.0
+        version: 4.5.0
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -663,9 +663,6 @@ packages:
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
 
-  '@types/leaflet@1.9.21':
-    resolution: {integrity: sha512-TbAd9DaPGSnzp6QvtYngntMZgcRk+igFELwR2N99XZn7RXUdKgsXMR+28bUO0rPsWp8MIu/f47luLIQuSLYv/w==}
-
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
 
@@ -874,8 +871,8 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  pmtiles@3.2.1:
-    resolution: {integrity: sha512-3R4fBwwoli5mw7a6t1IGwOtfmcSAODq6Okz0zkXhS1zi9sz1ssjjIfslwPvcWw5TNhdjNBUg9fgfPLeqZlH6ng==}
+  pmtiles@4.5.0:
+    resolution: {integrity: sha512-CBeD4SoUluFziGdy/8k7FOjQxQy486n+929W/tWophauvMICpkZ26vGBWhDt/6b1FZQWNaf4jFdT/5+q0Wii5w==}
 
   postcss@8.5.29:
     resolution: {integrity: sha512-49cGhUbXj8Qenv0iTMxA1cFBzxXoctpC9Ujd77t1WcbJIr6nF/eI7g/8MgxrYldFRuAXvja7xQRwavoW7kgrxQ==}
@@ -1515,10 +1512,6 @@ snapshots:
 
   '@types/geojson@7946.0.16': {}
 
-  '@types/leaflet@1.9.21':
-    dependencies:
-      '@types/geojson': 7946.0.16
-
   '@types/prop-types@15.7.15': {}
 
   '@types/react-dom@18.3.7(@types/react@18.3.31)':
@@ -1761,9 +1754,8 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  pmtiles@3.2.1:
+  pmtiles@4.5.0:
     dependencies:
-      '@types/leaflet': 1.9.21
       fflate: 0.8.3
 
   postcss@8.5.29:
