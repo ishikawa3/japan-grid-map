@@ -72,19 +72,40 @@ export function SearchPanel() {
     }
   };
 
-  const showList = query.trim() !== '' && (results.length > 0 || loading || error !== null);
+  // 矢印キーで選んだ候補が見えるようにスクロールする（フォーカスは入力欄に残したまま）
+  useEffect(() => {
+    if (activeIndex < 0) return;
+    document.getElementById(`${listId}-${activeIndex}`)?.scrollIntoView({ block: 'nearest' });
+  }, [activeIndex, listId]);
+
+  const hasQuery = query.trim() !== '';
+  const showList = hasQuery && !loading && !error && results.length > 0;
+  // listbox の子は option のみ許されるため、状態表示は listbox の外に role=status で出す
+  const status = !hasQuery
+    ? null
+    : loading
+      ? '読み込み中…'
+      : error
+        ? error
+        : entries && results.length === 0
+          ? '該当する施設がありません'
+          : null;
 
   return (
     <div className="search-panel" role="search">
+      {/* WAI-ARIA の combobox パターン: フォーカスは常に入力欄に置き、
+          選択中の候補は aria-activedescendant で支援技術に伝える */}
       <input
         ref={inputRef}
         type="search"
+        role="combobox"
         className="search-input"
         placeholder="変電所・発電所を検索"
         aria-label="施設名で検索"
         aria-autocomplete="list"
-        aria-controls={showList ? listId : undefined}
+        aria-controls={listId}
         aria-expanded={showList}
+        aria-activedescendant={showList && activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
         value={query}
         onFocus={ensureLoaded}
         onChange={(e) => {
@@ -94,36 +115,35 @@ export function SearchPanel() {
         onKeyDown={onKeyDown}
       />
 
-      {showList && (
-        <ul className="search-results" id={listId} role="listbox" aria-label="検索結果">
-          {loading && <li className="search-status">読み込み中…</li>}
-          {error && <li className="search-status search-error">{error}</li>}
-          {!loading &&
-            !error &&
-            results.map((entry, i) => (
-              <li key={`${entry.n}-${entry.lon}-${entry.lat}`}>
-                <button
-                  type="button"
-                  className={`search-result${i === activeIndex ? ' search-result-active' : ''}`}
-                  role="option"
-                  aria-selected={i === activeIndex}
-                  onMouseEnter={() => setActiveIndex(i)}
-                  onClick={() => select(entry)}
-                >
-                  <span className="search-result-dot" style={{ background: KIND_COLOR[entry.t] }} aria-hidden="true" />
-                  <span className="search-result-body">
-                    <span className="search-result-name">{entry.n}</span>
-                    <span className="search-result-meta">
-                      {KIND_LABEL[entry.t]}
-                      {entry.o ? ` · ${entry.o}` : ''}
-                    </span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          {!loading && !error && results.length === 0 && <li className="search-status">該当する施設がありません</li>}
-        </ul>
-      )}
+      <ul className="search-results" id={listId} role="listbox" aria-label="検索結果" hidden={!showList}>
+        {showList &&
+          results.map((entry, i) => (
+            <li
+              key={`${entry.n}-${entry.lon}-${entry.lat}`}
+              id={`${listId}-${i}`}
+              className={`search-result${i === activeIndex ? ' search-result-active' : ''}`}
+              role="option"
+              aria-selected={i === activeIndex}
+              onMouseEnter={() => setActiveIndex(i)}
+              // 入力欄からフォーカスを奪わない
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => select(entry)}
+            >
+              <span className="search-result-dot" style={{ background: KIND_COLOR[entry.t] }} aria-hidden="true" />
+              <span className="search-result-body">
+                <span className="search-result-name">{entry.n}</span>
+                <span className="search-result-meta">
+                  {KIND_LABEL[entry.t]}
+                  {entry.o ? ` · ${entry.o}` : ''}
+                </span>
+              </span>
+            </li>
+          ))}
+      </ul>
+
+      <div className="search-live" role="status">
+        {status && <p className={`search-results search-status${error ? ' search-error' : ''}`}>{status}</p>}
+      </div>
     </div>
   );
 }

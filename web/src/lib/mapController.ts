@@ -20,10 +20,15 @@ export interface FlyToOptions {
   zoom?: number;
 }
 
-/** 指定座標へ移動する。地図が未初期化なら false を返す。 */
+/**
+ * 指定座標へ移動する。地図が未初期化なら false を返す。
+ * `essential: true` は付けない。付けると OS の「視差効果を減らす」
+ * (prefers-reduced-motion: reduce) を無視して大きなズーム・パン演出が走る。
+ * 付けなければ MapLibre が reduced-motion 時は瞬時に移動 (jumpTo 相当) してくれる。
+ */
 export function flyTo({ lon, lat, zoom = 14 }: FlyToOptions): boolean {
   if (!map) return false;
-  map.flyTo({ center: [lon, lat], zoom, essential: true });
+  map.flyTo({ center: [lon, lat], zoom });
   return true;
 }
 

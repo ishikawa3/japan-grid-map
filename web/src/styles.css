@@ -293,9 +293,8 @@ body {
   background: rgba(232, 238, 245, 0.1);
 }
 
-.search-result:focus-visible {
-  outline: 2px solid #4dd6c1;
-  outline-offset: -2px;
+.search-results[hidden] {
+  display: none;
 }
 
 .search-result-dot {
@@ -328,7 +327,7 @@ body {
 }
 
 .search-status {
-  padding: 10px;
+  padding: 10px 14px;
   font-size: 12px;
   color: #9fb0c3;
 }
@@ -367,30 +366,49 @@ body {
   outline-offset: 2px;
 }
 
-.about-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(4, 8, 15, 0.55);
-  z-index: 3;
-}
-
+/* ネイティブ <dialog>（showModal）。top layer に出るので z-index は不要 */
 .about-panel {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   width: min(560px, calc(100vw - 32px));
   max-height: min(80vh, 720px);
+  margin: auto;
+  padding: 0;
   overflow-y: auto;
-  padding: 22px 24px;
+  color: #e8eef5;
   background: rgba(11, 18, 32, 0.97);
   border: 1px solid rgba(232, 238, 245, 0.18);
   border-radius: 14px;
-  z-index: 4;
+  overscroll-behavior: contain;
 }
 
-.about-panel:focus {
-  outline: none;
+.about-panel::backdrop {
+  background: rgba(4, 8, 15, 0.55);
+}
+
+.about-body {
+  position: relative;
+  padding: 22px 24px;
+}
+
+/* 開閉のフェード。動きを減らす設定のユーザーには出さない */
+@media (prefers-reduced-motion: no-preference) {
+  .about-panel,
+  .about-panel::backdrop {
+    transition:
+      opacity 0.18s ease,
+      overlay 0.18s ease allow-discrete,
+      display 0.18s ease allow-discrete;
+    opacity: 0;
+  }
+  .about-panel[open],
+  .about-panel[open]::backdrop {
+    opacity: 1;
+  }
+  @starting-style {
+    .about-panel[open],
+    .about-panel[open]::backdrop {
+      opacity: 0;
+    }
+  }
 }
 
 .about-close {
