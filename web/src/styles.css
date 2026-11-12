@@ -377,38 +377,58 @@ body {
   background: rgba(11, 18, 32, 0.97);
   border: 1px solid rgba(232, 238, 245, 0.18);
   border-radius: 14px;
+
+  /* 開閉フェード（閉じた状態＝退場時の到達点）。top layer の出入りには display と
+     overlay の離散トランジションが必須。allow-discrete を transition の一括指定に
+     混ぜると非対応ブラウザが宣言ごと捨てるので、transition-behavior を別に書く */
+  opacity: 0;
+  transition-property: opacity, display, overlay;
+  transition-duration: 0.18s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+
+  /* 動きを減らす設定でも位置の移動・拡大はもともと無いので、フェードを短くするだけ */
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0.1s;
+  }
+}
+
+.about-panel[open] {
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+/* モーダル表示中、ダイアログ内や背景でのスクロールが下のページへ伝わらないようにする */
+.about-panel:modal {
   overscroll-behavior: contain;
 }
 
 .about-panel::backdrop {
-  background: rgba(4, 8, 15, 0.55);
+  /* ::backdrop は既定でスクロールコンテナではないため、overflow を与えないと
+     overscroll-behavior が効かない */
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgba(4, 8, 15, 0);
+  transition-property: background-color, display, overlay;
+  transition-duration: 0.18s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+}
+
+.about-panel[open]::backdrop {
+  background-color: rgba(4, 8, 15, 0.55);
+
+  @starting-style {
+    background-color: rgba(4, 8, 15, 0);
+  }
 }
 
 .about-body {
   position: relative;
   padding: 22px 24px;
-}
-
-/* 開閉のフェード。動きを減らす設定のユーザーには出さない */
-@media (prefers-reduced-motion: no-preference) {
-  .about-panel,
-  .about-panel::backdrop {
-    transition:
-      opacity 0.18s ease,
-      overlay 0.18s ease allow-discrete,
-      display 0.18s ease allow-discrete;
-    opacity: 0;
-  }
-  .about-panel[open],
-  .about-panel[open]::backdrop {
-    opacity: 1;
-  }
-  @starting-style {
-    .about-panel[open],
-    .about-panel[open]::backdrop {
-      opacity: 0;
-    }
-  }
 }
 
 .about-close {

@@ -7,7 +7,6 @@ const REPO_URL = 'https://github.com/ishikawa3/japan-grid-map';
 export function AboutPanel() {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const pressedOnBackdrop = useRef(false);
   const { canInstall, install } = useInstallPrompt();
 
   // ネイティブ <dialog> の showModal() に任せることで、背景の inert 化（Tab が地図側へ
@@ -19,6 +18,32 @@ export function AboutPanel() {
     if (open && !dialog.open) dialog.showModal();
     else if (!open && dialog.open) dialog.close();
   }, [open]);
+
+  // 背景クリックで閉じる (light dismiss) は closedby="any" に任せる。
+  // closedby 未対応ブラウザ (2026-11 時点で Safari) でだけ同等の処理を足す。
+  // event.target ではなくポインタ座標で判定し、押下と離す位置の両方が外側のときだけ閉じる
+  // （本文でテキスト選択を始めて背景で離したときに閉じないように）。
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog || 'closedBy' in HTMLDialogElement.prototype) return;
+    const outside = (e: PointerEvent) => {
+      const r = dialog.getBoundingClientRect();
+      return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+    };
+    let pressedOutside = false;
+    const onDown = (e: PointerEvent) => {
+      pressedOutside = outside(e);
+    };
+    const onUp = (e: PointerEvent) => {
+      if (pressedOutside && outside(e)) dialog.close();
+    };
+    dialog.addEventListener('pointerdown', onDown);
+    dialog.addEventListener('pointerup', onUp);
+    return () => {
+      dialog.removeEventListener('pointerdown', onDown);
+      dialog.removeEventListener('pointerup', onUp);
+    };
+  }, []);
 
   const total = meta.counts.lines + meta.counts.nodes + meta.counts.towers + meta.counts.generators;
 
@@ -39,17 +64,9 @@ export function AboutPanel() {
         ref={dialogRef}
         className="about-panel"
         aria-labelledby="about-title"
+        closedby="any"
+        // Esc・背景クリック・モバイルの戻るジェスチャなど、どの経路で閉じても close が飛ぶ
         onClose={() => setOpen(false)}
-        // ::backdrop 部分のクリックは dialog 要素自身がターゲットになる。
-        // 中身は .about-body で覆っているので、本文クリックでは閉じない。
-        // 本文でテキスト選択を始めて背景で離した場合も click の target は dialog に
-        // なるため、押下開始位置も背景だったときだけ閉じる。
-        onPointerDown={(e) => {
-          pressedOnBackdrop.current = e.target === e.currentTarget;
-        }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget && pressedOnBackdrop.current) setOpen(false);
-        }}
       >
         {/* 閉じても中身は残す（アンマウントするとフェードアウトが効かない） */}
         <div className="about-body">
