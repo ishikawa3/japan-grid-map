@@ -23,10 +23,12 @@ export function AboutPanel() {
   // closedby 未対応ブラウザ (2026-11 時点で Safari) でだけ同等の処理を足す。
   // event.target ではなくポインタ座標で判定し、押下と離す位置の両方が外側のときだけ閉じる
   // （本文でテキスト選択を始めて背景で離したときに閉じないように）。
+  // 閉じるのは pointerup ではなく click で行う。pointerup で閉じると、iOS がその後に
+  // 合成する click が top layer から外れた後の地図に当たり、意図しない地物選択が起きる。
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog || 'closedBy' in HTMLDialogElement.prototype) return;
-    const outside = (e: PointerEvent) => {
+    const outside = (e: MouseEvent) => {
       const r = dialog.getBoundingClientRect();
       return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
     };
@@ -34,14 +36,15 @@ export function AboutPanel() {
     const onDown = (e: PointerEvent) => {
       pressedOutside = outside(e);
     };
-    const onUp = (e: PointerEvent) => {
+    const onClick = (e: MouseEvent) => {
       if (pressedOutside && outside(e)) dialog.close();
+      pressedOutside = false;
     };
     dialog.addEventListener('pointerdown', onDown);
-    dialog.addEventListener('pointerup', onUp);
+    dialog.addEventListener('click', onClick);
     return () => {
       dialog.removeEventListener('pointerdown', onDown);
-      dialog.removeEventListener('pointerup', onUp);
+      dialog.removeEventListener('click', onClick);
     };
   }, []);
 

@@ -22,6 +22,11 @@ export function SearchPanel() {
   // キーボード操作で選択中の候補（-1 は未選択）
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  // 矢印キーで選択が動いたときだけ候補をスクロールさせる（ホバーで動かすとリストが
+  // ポインタの下で流れ、次の候補の mouseenter を誘発してしまう）
+  const scrollOnNextActive = useRef(false);
+  const lastPointer = useRef<{ x: number; y: number } | null>(null);
   const listId = useId();
 
   // 入力が始まった時点で初めてインデックスを取得する（初回描画を妨げない）
@@ -62,9 +67,11 @@ export function SearchPanel() {
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
+      scrollOnNextActive.current = true;
       setActiveIndex((i) => (i + 1) % results.length);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
+      scrollOnNextActive.current = true;
       setActiveIndex((i) => (i <= 0 ? results.length - 1 : i - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
@@ -72,24 +79,36 @@ export function SearchPanel() {
     }
   };
 
-  // 矢印キーで選んだ候補が見えるようにスクロールする（フォーカスは入力欄に残したまま）
+  // 矢印キーで選んだ候補が見えるようにスクロールする（フォーカスは入力欄に残したまま）。
+  // scrollIntoView は祖先やモバイルの visual viewport まで動かしうるので、listbox の
+  // scrollTop だけを調整する。
   useEffect(() => {
-    if (activeIndex < 0) return;
-    document.getElementById(`${listId}-${activeIndex}`)?.scrollIntoView({ block: 'nearest' });
-  }, [activeIndex, listId]);
+    if (!scrollOnNextActive.current) return;
+    scrollOnNextActive.current = false;
+    const list = listRef.current;
+    const item = list?.children[activeIndex] as HTMLElement | undefined;
+    if (!list || !item) return;
+    const top = item.offsetTop - list.clientTop;
+    const bottom = top + item.offsetHeight;
+    if (top < list.scrollTop) list.scrollTop = top;
+    else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
+  }, [activeIndex]);
 
-  const hasQuery = query.trim() !== '';
-  const showList = hasQuery && !loading && !error && results.length > 0;
-  // listbox の子は option のみ許されるため、状態表示は listbox の外に role=status で出す
-  const status = !hasQuery
-    ? null
-    : loading
-      ? '読み込み中…'
-      : error
-        ? error
-        : entries && results.length === 0
-          ? '該当する施設がありません'
-          : null;
+  const { showList, visibleStatus, announcement } = describeState({
+    hasQuery: query.trim() !== '',
+    loaded: entries !== null,
+    loading,
+    error,
+    count: results.length,
+  });
+
+  // スクリーンリーダー向けの読み上げは打鍵ごとに変えず、入力が落ち着いてから一度だけ出す
+  // （「該当なし」の繰り返し読み上げを避け、候補が出たときは件数も伝える）
+  const [liveMessage, setLiveMessage] = useState('');
+  useEffect(() => {
+    const t = setTimeout(() => setLiveMessage(announcement), 600);
+    return () => clearTimeout(t);
+  }, [announcement]);
 
   return (
     <div className="search-panel" role="search">
@@ -115,7 +134,14 @@ export function SearchPanel() {
         onKeyDown={onKeyDown}
       />
 
-      <ul className="search-results" id={listId} role="listbox" aria-label="検索結果" hidden={!showList}>
+      <ul
+        ref={listRef}
+        className="search-popup search-results"
+        id={listId}
+        role="listbox"
+        aria-label="検索結果"
+        hidden={!showList}
+      >
         {showList &&
           results.map((entry, i) => (
             <li
@@ -124,7 +150,14 @@ export function SearchPanel() {
               className={`search-result${i === activeIndex ? ' search-result-active' : ''}`}
               role="option"
               aria-selected={i === activeIndex}
-              onMouseEnter={() => setActiveIndex(i)}
+              onMouseMove={(e) => {
+                // mouseenter はキー操作でリストがスクロールしただけでも（ポインタの下に別の候補が
+                // 来ると）発火し、矢印キーの選択を上書きしてしまう。実際にマウスが動いたときだけ追従する。
+                const last = lastPointer.current;
+                if (last && last.x === e.clientX && last.y === e.clientY) return;
+                lastPointer.current = { x: e.clientX, y: e.clientY };
+                if (i !== activeIndex) setActiveIndex(i);
+              }}
               // 入力欄からフォーカスを奪わない
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => select(entry)}
@@ -141,9 +174,36 @@ export function SearchPanel() {
           ))}
       </ul>
 
-      <div className="search-live" role="status">
-        {status && <p className={`search-results search-status${error ? ' search-error' : ''}`}>{status}</p>}
+      {/* listbox の子は option のみ許されるため、状態表示は listbox の外に出す */}
+      {visibleStatus && <p className={`search-popup search-status${error ? ' search-error' : ''}`}>{visibleStatus}</p>}
+      <div className="visually-hidden" role="status">
+        {liveMessage}
       </div>
     </div>
   );
+}
+
+/** 入力・読み込み状態から、候補リストの表示有無・画面上の状態表示・読み上げ文言を決める */
+function describeState({
+  hasQuery,
+  loaded,
+  loading,
+  error,
+  count,
+}: {
+  hasQuery: boolean;
+  loaded: boolean;
+  loading: boolean;
+  error: string | null;
+  count: number;
+}): { showList: boolean; visibleStatus: string | null; announcement: string } {
+  if (!hasQuery) return { showList: false, visibleStatus: null, announcement: '' };
+  if (loading) return { showList: false, visibleStatus: '読み込み中…', announcement: '' };
+  if (error) return { showList: false, visibleStatus: error, announcement: error };
+  if (!loaded) return { showList: false, visibleStatus: null, announcement: '' };
+  if (count === 0) {
+    const none = '該当する施設がありません';
+    return { showList: false, visibleStatus: none, announcement: none };
+  }
+  return { showList: true, visibleStatus: null, announcement: `候補 ${count} 件` };
 }
