@@ -262,16 +262,21 @@ body {
   outline-offset: 1px;
 }
 
-.search-results {
-  list-style: none;
+/* 検索欄の下に出る箱（候補リストと状態表示で共通の見た目） */
+.search-popup {
   margin: 6px 0 0;
   padding: 4px;
-  max-height: min(52vh, 420px);
-  overflow-y: auto;
   background: rgba(11, 18, 32, 0.94);
   border: 1px solid rgba(232, 238, 245, 0.15);
   border-radius: 10px;
   backdrop-filter: blur(6px);
+}
+
+.search-results {
+  position: relative; /* 候補の offsetTop をリスト基準にする */
+  list-style: none;
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
 }
 
 .search-result {
@@ -293,9 +298,8 @@ body {
   background: rgba(232, 238, 245, 0.1);
 }
 
-.search-result:focus-visible {
-  outline: 2px solid #4dd6c1;
-  outline-offset: -2px;
+.search-results[hidden] {
+  display: none;
 }
 
 .search-result-dot {
@@ -328,13 +332,26 @@ body {
 }
 
 .search-status {
-  padding: 10px;
+  padding: 10px 14px;
   font-size: 12px;
   color: #9fb0c3;
 }
 
 .search-error {
   color: #ff9a8a;
+}
+
+/* 画面には出さずスクリーンリーダーにだけ読ませる */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ---------- このサイトについて ---------- */
@@ -367,30 +384,69 @@ body {
   outline-offset: 2px;
 }
 
-.about-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(4, 8, 15, 0.55);
-  z-index: 3;
-}
-
+/* ネイティブ <dialog>（showModal）。top layer に出るので z-index は不要 */
 .about-panel {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
   width: min(560px, calc(100vw - 32px));
   max-height: min(80vh, 720px);
+  margin: auto;
+  padding: 0;
   overflow-y: auto;
-  padding: 22px 24px;
+  color: #e8eef5;
   background: rgba(11, 18, 32, 0.97);
   border: 1px solid rgba(232, 238, 245, 0.18);
   border-radius: 14px;
-  z-index: 4;
+
+  /* 開閉フェード（閉じた状態＝退場時の到達点）。top layer の出入りには display と
+     overlay の離散トランジションが必須。allow-discrete を transition の一括指定に
+     混ぜると非対応ブラウザが宣言ごと捨てるので、transition-behavior を別に書く */
+  opacity: 0;
+  transition-property: opacity, display, overlay;
+  transition-duration: 0.18s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+
+  /* 動きを減らす設定でも位置の移動・拡大はもともと無いので、フェードを短くするだけ */
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 0.1s;
+  }
 }
 
-.about-panel:focus {
-  outline: none;
+.about-panel[open] {
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+/* モーダル表示中、ダイアログ内や背景でのスクロールが下のページへ伝わらないようにする */
+.about-panel:modal {
+  overscroll-behavior: contain;
+}
+
+.about-panel::backdrop {
+  /* ::backdrop は既定でスクロールコンテナではないため、overflow を与えないと
+     overscroll-behavior が効かない */
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgba(4, 8, 15, 0);
+  transition-property: background-color, display, overlay;
+  transition-duration: 0.18s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+}
+
+.about-panel[open]::backdrop {
+  background-color: rgba(4, 8, 15, 0.55);
+
+  @starting-style {
+    background-color: rgba(4, 8, 15, 0);
+  }
+}
+
+.about-body {
+  position: relative;
+  padding: 22px 24px;
 }
 
 .about-close {

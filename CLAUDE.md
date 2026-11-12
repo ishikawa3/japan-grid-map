@@ -63,6 +63,12 @@ make test     # 電圧パーサ等のユニットテスト
   戻せない」状態になる。しかも bearing は `hash:true` が URL（`#zoom/lat/lng/bearing`）に
   保存するため、リロードしても直らない。回転を許すならリセット手段を必ず残し、許さないなら
   `dragRotate.disable()` 等でジェスチャ側を無効化する（片方だけにしない）
+- 地図の移動 (`flyTo`/`easeTo`) に `essential: true` を付けない。付けると
+  `prefers-reduced-motion: reduce` を無視してアニメーションする（付けなければ MapLibre が瞬時移動にしてくれる）
+- モーダルは自前の div + role="dialog" ではなくネイティブ `<dialog>` の `showModal()` を使う
+  （背景 inert 化・Escape・フォーカス復帰をブラウザに任せる。背景クリックで閉じるのは
+  `closedby="any"` を使い、未対応ブラウザ向けの代替処理は `closedBy` の機能検出時のみ）。検索候補は WAI-ARIA combobox
+  パターン（入力欄に `role="combobox"` + `aria-activedescendant`、listbox の子は option のみ）
 - `index.html` 内のアセット参照はリポジトリ名を含めず `/favicon.svg` のように書く。
   Vite が `base` を前置するため、ハードコードすると `base` 変更時に壊れる
 - Service Worker はアプリシェルのみキャッシュし、`tiles/` と Range Request は対象外にする
