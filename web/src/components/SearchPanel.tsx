@@ -6,6 +6,7 @@ import {
   searchFacilities,
   type FacilityEntry,
 } from '../lib/searchIndex';
+import { describeSearchState } from '../lib/searchState';
 
 const KIND_COLOR: Record<FacilityEntry['t'], string> = {
   s: '#e8eef5',
@@ -88,13 +89,15 @@ export function SearchPanel() {
     const list = listRef.current;
     const item = list?.children[activeIndex] as HTMLElement | undefined;
     if (!list || !item) return;
-    const top = item.offsetTop - list.clientTop;
+    // offsetTop は offsetParent（position: relative の list）のパディング端からの距離で、
+    // scrollTop と同じ座標系。clientTop（枠線幅）を引くと二重に引くことになる。
+    const top = item.offsetTop;
     const bottom = top + item.offsetHeight;
     if (top < list.scrollTop) list.scrollTop = top;
     else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
   }, [activeIndex]);
 
-  const { showList, visibleStatus, announcement } = describeState({
+  const { showList, visibleStatus, announcement } = describeSearchState({
     hasQuery: query.trim() !== '',
     loaded: entries !== null,
     loading,
@@ -181,29 +184,4 @@ export function SearchPanel() {
       </div>
     </div>
   );
-}
-
-/** 入力・読み込み状態から、候補リストの表示有無・画面上の状態表示・読み上げ文言を決める */
-function describeState({
-  hasQuery,
-  loaded,
-  loading,
-  error,
-  count,
-}: {
-  hasQuery: boolean;
-  loaded: boolean;
-  loading: boolean;
-  error: string | null;
-  count: number;
-}): { showList: boolean; visibleStatus: string | null; announcement: string } {
-  if (!hasQuery) return { showList: false, visibleStatus: null, announcement: '' };
-  if (loading) return { showList: false, visibleStatus: '読み込み中…', announcement: '' };
-  if (error) return { showList: false, visibleStatus: error, announcement: error };
-  if (!loaded) return { showList: false, visibleStatus: null, announcement: '' };
-  if (count === 0) {
-    const none = '該当する施設がありません';
-    return { showList: false, visibleStatus: none, announcement: none };
-  }
-  return { showList: true, visibleStatus: null, announcement: `候補 ${count} 件` };
 }
